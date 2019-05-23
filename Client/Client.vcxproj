@@ -150,20 +150,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ChatClient.cpp" />
-    <ClCompile Include="ConsoleHandler.cpp" />
-    <ClCompile Include="DataStream.cpp" />
-    <ClCompile Include="Packet.cpp" />
-    <ClCompile Include="PacketHandler.cpp" />
+    <ClCompile Include="Packet\DataStream.cpp" />
+    <ClCompile Include="Packet\Packet.cpp" />
+    <ClCompile Include="Packet\PacketHandler.cpp" />
+    <ClCompile Include="UI\ConsoleHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChatClient.h" />
-    <ClInclude Include="ConsoleHandler.h" />
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="DataStream.h" />
-    <ClInclude Include="Packet.h" />
-    <ClInclude Include="PacketException.h" />
-    <ClInclude Include="PacketHandler.h" />
-    <ClInclude Include="StartupException.h" />
+    <ClInclude Include="Exception\PacketException.h" />
+    <ClInclude Include="Exception\StartupException.h" />
+    <ClInclude Include="Packet\DataStream.h" />
+    <ClInclude Include="Packet\Packet.h" />
+    <ClInclude Include="Packet\PacketHandler.h" />
+    <ClInclude Include="UI\ConsoleHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

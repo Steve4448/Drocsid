@@ -1,7 +1,7 @@
 #include "PacketHandler.h"
 #include <iostream>
-#include "ChatClient.h"
-#include "PacketException.h"
+#include "../ChatClient.h"
+#include "../Exception/PacketException.h"
 using namespace std;
 
 PacketHandler::PacketHandler(ChatClient * const clientInstance, SOCKET socket) :

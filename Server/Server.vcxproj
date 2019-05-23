@@ -149,22 +149,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Packet\DataStream.cpp" />
+    <ClCompile Include="Packet\Packet.cpp" />
+    <ClCompile Include="Packet\PacketHandler.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="User.cpp" />
-    <ClCompile Include="DataStream.cpp" />
-    <ClCompile Include="Packet.cpp" />
-    <ClCompile Include="PacketHandler.cpp" />
     <ClCompile Include="Server.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PacketException.h" />
+    <ClInclude Include="Exception\PacketException.h" />
+    <ClInclude Include="Exception\StartupException.h" />
+    <ClInclude Include="Packet\DataStream.h" />
+    <ClInclude Include="Packet\Packet.h" />
+    <ClInclude Include="Packet\PacketHandler.h" />
     <ClInclude Include="Room.h" />
-    <ClInclude Include="StartupException.h" />
     <ClInclude Include="User.h" />
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="DataStream.h" />
-    <ClInclude Include="Packet.h" />
-    <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="Server.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

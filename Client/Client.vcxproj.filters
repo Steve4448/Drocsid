@@ -9,37 +9,37 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Header Files\Packet">
-      <UniqueIdentifier>{9863bd08-6845-456c-aee5-5fcb446b0574}</UniqueIdentifier>
+    <Filter Include="Header Files\UI">
+      <UniqueIdentifier>{fca27908-39bd-4943-adc0-0163504c1eef}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Packet">
-      <UniqueIdentifier>{58815a59-8c13-4159-8e17-5502bf61f2bb}</UniqueIdentifier>
+    <Filter Include="Header Files\Packet">
+      <UniqueIdentifier>{7f9c38ed-fc3c-4a11-88d8-d3891f7ea345}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Exception">
-      <UniqueIdentifier>{f2d4a077-6738-4dbf-880b-f914499e8b56}</UniqueIdentifier>
+      <UniqueIdentifier>{f26d4388-f7a6-4094-ab86-47535b8a92bd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\UI">
-      <UniqueIdentifier>{a6a8e33b-a661-4608-a40b-0c75fcd43c1e}</UniqueIdentifier>
+      <UniqueIdentifier>{b1a004fb-db14-48da-bb44-336053510cfc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\UI">
-      <UniqueIdentifier>{defc4426-4668-4aa9-8ab3-ae0fbb8c0696}</UniqueIdentifier>
+    <Filter Include="Source Files\Packet">
+      <UniqueIdentifier>{e5efaa1c-2a54-42aa-849a-ee6a82f919cc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChatClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Packet.cpp">
-      <Filter>Source Files\Packet</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketHandler.cpp">
-      <Filter>Source Files\Packet</Filter>
-    </ClCompile>
-    <ClCompile Include="DataStream.cpp">
-      <Filter>Source Files\Packet</Filter>
-    </ClCompile>
-    <ClCompile Include="ConsoleHandler.cpp">
+    <ClCompile Include="UI\ConsoleHandler.cpp">
       <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet\PacketHandler.cpp">
+      <Filter>Source Files\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet\Packet.cpp">
+      <Filter>Source Files\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet\DataStream.cpp">
+      <Filter>Source Files\Packet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -49,22 +49,22 @@
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Packet.h">
-      <Filter>Header Files\Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketHandler.h">
-      <Filter>Header Files\Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="DataStream.h">
-      <Filter>Header Files\Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketException.h">
+    <ClInclude Include="Exception\StartupException.h">
       <Filter>Header Files\Exception</Filter>
     </ClInclude>
-    <ClInclude Include="StartupException.h">
+    <ClInclude Include="Exception\PacketException.h">
       <Filter>Header Files\Exception</Filter>
     </ClInclude>
-    <ClInclude Include="ConsoleHandler.h">
+    <ClInclude Include="Packet\PacketHandler.h">
+      <Filter>Header Files\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet\Packet.h">
+      <Filter>Header Files\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet\DataStream.h">
+      <Filter>Header Files\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\ConsoleHandler.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,6 @@
 #ifndef PACKET_H_
 #define PACKET_H_
-#include "Constants.h"
+#include "../Constants.h"
 #include "DataStream.h"
 #include <string>
 

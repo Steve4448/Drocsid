@@ -4,8 +4,8 @@
 #include <ws2tcpip.h>
 #include <string>
 #include <thread>
-#include "PacketHandler.h"
-#include "ConsoleHandler.h"
+#include "Packet/PacketHandler.h"
+#include "UI/ConsoleHandler.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 

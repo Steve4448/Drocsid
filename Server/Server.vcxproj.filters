@@ -9,34 +9,34 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Source Files\Packet">
-      <UniqueIdentifier>{a395f5e8-c3d6-499c-b40c-7a93bac3807d}</UniqueIdentifier>
+    <Filter Include="Header Files\Exception">
+      <UniqueIdentifier>{ad7f7801-8244-4392-8cc4-1bcda709a5f6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Packet">
-      <UniqueIdentifier>{d2973a10-02ee-486e-a4f4-ede28e013697}</UniqueIdentifier>
+      <UniqueIdentifier>{f2fba536-b4b6-4643-b835-87976e5db6e2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Exception">
-      <UniqueIdentifier>{d82579e4-8b8e-4542-bdbf-32d2d03e29f7}</UniqueIdentifier>
+    <Filter Include="Source Files\Packet">
+      <UniqueIdentifier>{995f806b-4cc3-43dc-b2f4-d0f65d118383}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PacketHandler.cpp">
-      <Filter>Source Files\Packet</Filter>
-    </ClCompile>
-    <ClCompile Include="Packet.cpp">
-      <Filter>Source Files\Packet</Filter>
-    </ClCompile>
-    <ClCompile Include="DataStream.cpp">
-      <Filter>Source Files\Packet</Filter>
-    </ClCompile>
     <ClCompile Include="User.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Room.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet\DataStream.cpp">
+      <Filter>Source Files\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet\Packet.cpp">
+      <Filter>Source Files\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet\PacketHandler.cpp">
+      <Filter>Source Files\Packet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -46,26 +46,26 @@
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataStream.h">
-      <Filter>Header Files\Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketHandler.h">
-      <Filter>Header Files\Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="Packet.h">
-      <Filter>Header Files\Packet</Filter>
-    </ClInclude>
     <ClInclude Include="User.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketException.h">
-      <Filter>Header Files\Exception</Filter>
     </ClInclude>
     <ClInclude Include="Room.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StartupException.h">
+    <ClInclude Include="Exception\PacketException.h">
       <Filter>Header Files\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="Exception\StartupException.h">
+      <Filter>Header Files\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet\PacketHandler.h">
+      <Filter>Header Files\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet\Packet.h">
+      <Filter>Header Files\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet\DataStream.h">
+      <Filter>Header Files\Packet</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
