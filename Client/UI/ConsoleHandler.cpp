@@ -10,7 +10,11 @@ ConsoleHandler::ConsoleHandler() :
 	inputStdHandle(GetStdHandle(STD_INPUT_HANDLE)),
 	outputStdHandle(GetStdHandle(STD_OUTPUT_HANDLE)),
 	lastResizeCheck(0),
-	resizeNeeded(false) {
+	resizeNeeded(false),
+	messageHistory{ nullptr },
+	topWidgetHistory{ nullptr },
+	bottomWidgetHistory{ nullptr },
+	curBodyMessageIdx(0) {
 	if (inputStdHandle == INVALID_HANDLE_VALUE || outputStdHandle == INVALID_HANDLE_VALUE)
 		throw StartupException("GetStdHandle was invalid.");
 	curCursor.X = 0;
@@ -35,17 +39,140 @@ void ConsoleHandler::checkResize() { //Hacky way of delaying the resize to only 
 }
 
 void ConsoleHandler::handleResize() {
+	outputMutex.lock();
 	GetConsoleScreenBufferInfo(outputStdHandle, &csbi);
 	columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+	for (unsigned short y = 0; y < rows; y++) {
+		setCursor(0, y);
+		cout << string(columns, ' ');
+	}
+
+	setColor(BORDER_COLOR);
+
+	for (unsigned short x = 1; x < columns-1; x++) {
+		setCursor(x, 0);
+		cout << "\xCD";
+		setCursor(x, rows-1);
+		cout << "\xCD";
+	}
+	for (unsigned short y = 1; y < rows - 1; y++) {
+		setCursor(0, y);
+		cout << "\xBA";
+		setCursor(columns-1, y);
+		cout << "\xBA";
+	}
+
+	setCursor(0, 0);
+	cout << "\xC9";
+	setCursor(columns-1, 0);
+	cout << "\xBB";
+	setCursor(0, rows-1);
+	cout << "\xC8";
+	setCursor(columns - 1, rows-1);
+	cout << "\xBC";
+
+	for (unsigned short y = 1; y < rows - 1; y++) {
+		setCursor(columns - 1 - WIDGET_SIZE, y);
+		cout << "\xBA";
+	}
+	for (unsigned short x = columns-WIDGET_SIZE; x < columns-1; x++) {
+		setCursor(x, rows/2);
+		cout << "\xCD";
+	}
+	setCursor(columns - 1 - WIDGET_SIZE, rows/2);
+	cout << "\xCC";
+	setCursor(columns - 1, rows / 2);
+	cout << "\xB9";
+	setCursor(columns - 1 - WIDGET_SIZE, 0);
+	cout << "\xCB";
+	setCursor(columns - 1 - WIDGET_SIZE, rows-1);
+	cout << "\xCA";
+
+	topWidgetStart.X = columns - WIDGET_SIZE;
+	topWidgetStart.Y = 1;
+	bottomWidgetStart.X = columns - WIDGET_SIZE;
+	bottomWidgetStart.Y = rows / 2 + 1;
+	string topNames[MAX_WIDGET_MESSAGES]{ "" };
+	unsigned short topColors[MAX_WIDGET_MESSAGES]{ 0 };
+	for (unsigned short i = 0; i < MAX_WIDGET_MESSAGES; i++) {
+		if (topWidgetHistory[i] == nullptr)
+			continue;
+		topNames[i] = topWidgetHistory[i]->getMessage();
+		topColors[i] = topWidgetHistory[i]->getColor();
+	}
+	updateTopRight(topNames, topColors, MAX_WIDGET_MESSAGES, false);
+
+	string bottomNames[MAX_WIDGET_MESSAGES]{ "" };
+	unsigned short bottomColors[MAX_WIDGET_MESSAGES]{ 0 };
+	for (unsigned short i = 0; i < MAX_WIDGET_MESSAGES; i++) {
+		if (bottomWidgetHistory[i] == nullptr)
+			continue;
+		bottomNames[i] = bottomWidgetHistory[i]->getMessage();
+		bottomColors[i] = bottomWidgetHistory[i]->getColor();
+	}
+	updateBottomRight(bottomNames, bottomColors, MAX_WIDGET_MESSAGES, false);
+
+	setColor(DEFAULT_COLOR);
+	setCursor(1, 1);
+	for (unsigned short i = 0; i < curBodyMessageIdx; i++) {
+		MessageEntry * entry = messageHistory[i];
+		if (entry != nullptr)
+			pushBodyMessage(entry->getMessage(), entry->getDefaultColor(), entry->doesNewLine(), false);
+	}
+
+	setCursor(1, curCursor.Y);
+	cout << currentInputString;
+
+	outputMutex.unlock();
 }
 
-void ConsoleHandler::pushBodyMessage(string message, unsigned short defaultColor, bool newLine) {
-	outputMutex.lock();
-	if (!currentInputString.empty()) {
-		setCursor(0, curCursor.Y);
-		cout << string(columns, ' ');
-		setCursor(0, curCursor.Y);
+void ConsoleHandler::scrollScreenUp() {
+	if (curCursor.Y + 1 > rows - 2) {
+
+		SMALL_RECT srctScrollRect, srctClipRect;
+		CHAR_INFO chiFill;
+		COORD coordDest;
+		srctScrollRect.Top = 1;
+		srctScrollRect.Bottom = rows-2;
+		srctScrollRect.Left = 1;
+		srctScrollRect.Right = columns-2-WIDGET_SIZE;
+
+		coordDest.X = 1;
+		coordDest.Y = 0;
+
+		srctClipRect = srctScrollRect;
+		chiFill.Attributes = 0;
+		chiFill.Char.AsciiChar = (char)' ';
+		ScrollConsoleScreenBuffer(
+			outputStdHandle,         // screen buffer handle 
+			&srctScrollRect, // scrolling rectangle 
+			&srctClipRect,   // clipping rectangle 
+			coordDest,       // top left destination cell 
+			&chiFill);
+		setCursor(1, curCursor.Y);
+	} else {
+		setCursor(1, curCursor.Y + 1);
+	}
+}
+
+void ConsoleHandler::pushBodyMessage(string message, unsigned short defaultColor, bool newLine, bool push) {
+	if (push) {
+		outputMutex.lock();
+		if(curBodyMessageIdx < MAX_BODY_MESSAGES)
+			messageHistory[curBodyMessageIdx++] = new MessageEntry(message, defaultColor, newLine);
+		else {
+			delete messageHistory[0];
+			for (unsigned short i = 0; i < MAX_BODY_MESSAGES-1; i++) {
+				messageHistory[i] = messageHistory[i + 1];
+			}
+			messageHistory[curBodyMessageIdx - 1] = new MessageEntry(message, defaultColor, newLine);
+		}
+		if (!currentInputString.empty()) {
+			setCursor(1, curCursor.Y);
+			cout << string(columns - 2 - WIDGET_SIZE, ' ');
+			setCursor(1, curCursor.Y);
+		}
 	}
 	setColor(defaultColor);
 	bool parsingColor = false;
@@ -55,11 +182,11 @@ void ConsoleHandler::pushBodyMessage(string message, unsigned short defaultColor
 			if (message.at(curPos) == '<') {
 				parsingColor = true;
 			} else if (message.at(curPos) == '\n') {
-				setCursor(0, curCursor.Y+1);
+				scrollScreenUp();
 			} else {
 				cout << message.at(curPos);
-				if (curCursor.X+1 >= columns)
-					setCursor(0, curCursor.Y+1);
+				if (curCursor.X + 1 >= columns - 2 - WIDGET_SIZE)
+					scrollScreenUp();
 				else
 					setCursor(curCursor.X + 1, curCursor.Y);
 			}
@@ -79,9 +206,11 @@ void ConsoleHandler::pushBodyMessage(string message, unsigned short defaultColor
 		}
 	}
 	if(newLine)
-		setCursor(0, curCursor.Y+1);
+		scrollScreenUp();
+		//setCursor(0, curCursor.Y+1);
 	setColor(DEFAULT_COLOR);
 
+	
 	/*size_t openBracketPos = message.find('<');
 	size_t closeBracketPos = message.find('>');
 	if (openBracketPos != string::npos && closeBracketPos != string::npos) {
@@ -101,15 +230,17 @@ void ConsoleHandler::pushBodyMessage(string message, unsigned short defaultColor
 		cout << message;
 	}
 	setColor(DEFAULT_COLOR);*/
-	if (!currentInputString.empty()) {
-		setCursor(0, curCursor.Y);
-		string outputString;
-		outputString.append(currentInputString);
-		outputString.resize(columns);
-		cout << outputString;
-		setCursor(0 + currentInputString.length(), curCursor.Y);
+	if (push) {
+		if (!currentInputString.empty()) {
+			setCursor(1, curCursor.Y);
+			string outputString;
+			outputString.append(currentInputString);
+			outputString.resize(columns);
+			cout << outputString;
+			setCursor(1 + currentInputString.length(), curCursor.Y);
+		}
+		outputMutex.unlock();
 	}
-	outputMutex.unlock();
 }
 
 string ConsoleHandler::getBlockingInput(string promptMessage) {
@@ -119,11 +250,13 @@ string ConsoleHandler::getBlockingInput(string promptMessage) {
 	while (!inputStringFinished) {
 		cv.wait(ucv_m);
 	}
+
 	string returnString = currentInputString;
-	setCursor(0, curCursor.Y);
+	setCursor(1, curCursor.Y);
 	currentInputString = "";
 	pushBodyMessage(returnString);
 	inputStringFinished = false;
+
 	return returnString;
 }
 
@@ -543,16 +676,68 @@ void ConsoleHandler::readInput() {
 				throw exception("Unknown event type");
 			}
 			if (updateTextEntry && !inputStringFinished) {
-				setCursor(0, curCursor.Y);
+				setCursor(1, curCursor.Y);
 				string outputString;
 				outputString.append(currentInputString);
-				outputString.resize(columns);
+				outputString.resize(columns - 2 - WIDGET_SIZE);
 				cout << outputString;
-				setCursor(0 + currentInputString.length(), curCursor.Y);
+				setCursor(1 + currentInputString.length(), curCursor.Y);
 			}
 		}
 		outputMutex.unlock();
 	}
+}
+
+void ConsoleHandler::updateTopRight(string * names, unsigned short * colors, unsigned short count, bool push) {
+	if(push)
+		outputMutex.lock();
+	COORD lastCursor = curCursor;
+	setCursor(topWidgetStart.X + 1, topWidgetStart.Y - 1);
+	setColor(BORDER_COLOR);
+	cout << "Room List";
+	for (unsigned short i = 0; i < MAX_WIDGET_MESSAGES; i++) {
+		setCursor(topWidgetStart.X, topWidgetStart.Y + i);
+		cout << string(WIDGET_SIZE - 1, ' ');
+	}
+	for (unsigned short i = 0; i < min(count, MAX_WIDGET_MESSAGES); i++) {
+		setCursor(topWidgetStart.X, topWidgetStart.Y + i);
+		setColor(colors[i]);
+		cout << names[i];
+		if (push) {
+			delete topWidgetHistory[i];
+			topWidgetHistory[i] = new WidgetEntry(names[i], colors[i]);
+		}
+	}
+	setColor(DEFAULT_COLOR);
+	setCursor(lastCursor.X, lastCursor.Y);
+	if (push)
+		outputMutex.unlock();
+}
+
+void ConsoleHandler::updateBottomRight(string * names, unsigned short * colors, unsigned short count, bool push) {
+	if (push)
+		outputMutex.lock();
+	COORD lastCursor = curCursor;
+	setCursor(bottomWidgetStart.X + 1, bottomWidgetStart.Y - 1);
+	setColor(BORDER_COLOR);
+	cout << "Friend List";
+	for (unsigned short i = 0; i < MAX_WIDGET_MESSAGES; i++) {
+		setCursor(bottomWidgetStart.X, bottomWidgetStart.Y + i);
+		cout << string(WIDGET_SIZE - 1, ' ');
+	}
+	for (unsigned short i = 0; i < min(count, MAX_WIDGET_MESSAGES); i++) {
+		setCursor(bottomWidgetStart.X, bottomWidgetStart.Y + i);
+		setColor(colors[i]);
+		cout << names[i];
+		if (push) {
+			delete bottomWidgetHistory[i];
+			bottomWidgetHistory[i] = new WidgetEntry(names[i], colors[i]);
+		}
+	}
+	setColor(DEFAULT_COLOR);
+	setCursor(lastCursor.X, lastCursor.Y);
+	if (push)
+		outputMutex.unlock();
 }
 
 void ConsoleHandler::setCursor(unsigned short x, unsigned short y) {
@@ -566,6 +751,13 @@ void ConsoleHandler::setColor(unsigned short color) {
 }
 
 ConsoleHandler::~ConsoleHandler() {
+	for (unsigned short i = 0; i < MAX_BODY_MESSAGES; i++) {
+		delete messageHistory[i];
+	}
+	for (unsigned short i = 0; i < MAX_WIDGET_MESSAGES; i++) {
+		delete topWidgetHistory[i];
+		delete bottomWidgetHistory[i];
+	}
 	running = false;
 	if (inputThreadInstance.joinable()) {
 		inputThreadInstance.join();

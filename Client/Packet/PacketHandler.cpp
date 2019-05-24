@@ -134,7 +134,7 @@ void PacketHandler::readLoop() {
 									roomNames[i] = roomName;
 									roomColors[i] = DEFAULT_COLOR;
 								}
-								//TextRenderer::updateTopRight(roomNames, roomColors, roomCount);
+								user->getConsoleRenderer()->updateTopRight(roomNames, roomColors, roomCount);
 								delete[] roomNames;
 								delete[] roomColors;
 								//cout << endl;
@@ -157,7 +157,7 @@ void PacketHandler::readLoop() {
 									userRoomList[i] = userName;
 									userRoomColors[i] = usernameColor;
 								}
-								//TextRenderer::updateTopRight(userRoomList, userRoomColors, userCount);
+								user->getConsoleRenderer()->updateTopRight(userRoomList, userRoomColors, userCount);
 								delete[] userRoomList;
 								delete[] userRoomColors;
 								//cout << endl;
@@ -185,7 +185,7 @@ void PacketHandler::readLoop() {
 									friendsList[i] = name;
 									friendListColors[i] = FRIEND_COLOR;
 								}
-								//TextRenderer::updateTopRight(friendsList, friendListColors, friendCount);
+								user->getConsoleRenderer()->updateBottomRight(friendsList, friendListColors, friendCount);
 								//cout << endl;
 								delete[] friendsList;
 								delete[] friendListColors;

@@ -22,7 +22,7 @@
 #define ERROR_COLOR 12
 #define FRIEND_COLOR 8
 #define DEFAULT_COLOR 15
-#define BORDER_COLOR 7
+#define BORDER_COLOR 8
 
 #define VERSION_CODE "Drocsid 0.27"
 #endif //CONSTANTS_H_

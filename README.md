@@ -1,5 +1,6 @@
 # Drocsid
 Drocsid is just a fun little C++ learning project to create a chat server and client while sticking to the windows console, avoiding using external libraries, and using Winsock. Drocsid currently supports multiple users, rooms, friends, simultaneous message sending & receiving, and colored messasges/names.
+![Image of Drocsid](application%20preview.png)
 
 ## How to use the Server
 The server will only prompt for a port to run at, nothing else should be required.
@@ -20,7 +21,7 @@ The client will first prompt for a IP and then port that points to the running D
 - [x] Support for colors.
 - [X] Store user information.
 - [X] Check user's stored password upon connection to verify credentials.
-- [ ] A UI with 'widgets' where the user's friends list & the server's room list can be displayed.
+- [X] A UI with 'widgets' where the user's friends list & the server's room list can be displayed.
 - [ ] Chat/server logs.
 - [ ] Ensure mutexes for packets are actually working properly. (I haven't had any issues yet, but I'm not confident in that code.)
 - [ ] Case insensitive usernames?
