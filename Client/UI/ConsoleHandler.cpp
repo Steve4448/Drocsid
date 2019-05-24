@@ -18,6 +18,7 @@ ConsoleHandler::ConsoleHandler() :
 	handleResize();
 	inputThreadInstance = thread(&ConsoleHandler::readInput, this);
 	resizeThreadInstance = thread(&ConsoleHandler::checkResize, this);
+	SetConsoleTitle(wstring(L"Drocsid").c_str());
 }
 
 void ConsoleHandler::checkResize() { //Hacky way of delaying the resize to only happen a maximum of once every 100ms.
