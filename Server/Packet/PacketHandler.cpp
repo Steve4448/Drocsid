@@ -5,6 +5,7 @@
 #include "../Room.h"
 #include "../Exception/PacketException.h"
 #include <chrono>
+
 using namespace std;
 
 PacketHandler::PacketHandler(Server * server, User * const user, SOCKET socket) :
@@ -85,20 +86,34 @@ void PacketHandler::readLoop() {
 								*stream >> username;
 								*stream >> password;
 								unsigned short returnCode = AUTHENTICATION_FAILURE;
-								Packet * p = constructPacket(AUTHENTICATION_PACKET_ID);
-								if (server->doesRegisteredUsernameExist(username)) {
-									//TODO: Load user and check password to see if it's correct.
-									*p << (unsigned short)AUTHENTICATION_NAME_IN_USE;
+								if (username.empty() || !server->isValidUsername(username)) {
+									returnCode = AUTHENTICATION_INVALID_USERNAME;
 								} else {
-									server->addRegisteredUsername(username);
-									user->setAuthenticated(true);
-									*p << (unsigned short)AUTHENTICATION_SUCCESS;
+									if (server->getUserByName(username) != nullptr) {
+										returnCode = AUTHENTICATION_NAME_IN_USE;
+									} else {
+										switch (user->load(username)) {
+										case LOAD_SUCCESS:
+											returnCode = user->getPassword() == password ? AUTHENTICATION_SUCCESS : AUTHENTICATION_INVALID_PASSWORD;
+											break;
+										case LOAD_NEW_USER:
+											returnCode = AUTHENTICATION_SUCCESS;
+											break;
+										case LOAD_FAILURE:
+										default:
+											returnCode = AUTHENTICATION_FAILURE;
+											break;
+										}
+									}
 								}
+								Packet * p = constructPacket(AUTHENTICATION_PACKET_ID);
+								*p << returnCode;
 								finializePacket(p);
-
-								if (user->isAuthenticated()) {
+								if (returnCode == AUTHENTICATION_SUCCESS) {
+									user->setAuthenticated(true);
 									user->setUsername(username);
 									user->setPassword(password);
+
 									user->sendServerMessage("Welcome to <11>Drocsid!", DEFAULT_COLOR);
 									user->sendServerMessage("Type /joinroom [name] to join/create a room.", DEFAULT_COLOR);
 									user->sendServerMessage("Type /help for more commands.", DEFAULT_COLOR);

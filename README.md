@@ -18,11 +18,12 @@ The client will first prompt for a IP and then port that points to the running D
 - [x] Friends list support.
 - [x] User can input text while also receiving messages (mutexes & custom console input method).
 - [x] Support for colors.
+- [X] Store user information.
+- [X] Check user's stored password upon connection to verify credentials.
 - [ ] A UI with 'widgets' where the user's friends list & the server's room list can be displayed.
 - [ ] Chat/server logs.
-- [ ] Store user information/master username list.
-- [ ] Check user's stored password upon connection to verify credentials.
 - [ ] Ensure mutexes for packets are actually working properly. (I haven't had any issues yet, but I'm not confident in that code.)
+- [ ] Case insensitive usernames?
 
 ## Command List
 - /joinroom \[room name\]

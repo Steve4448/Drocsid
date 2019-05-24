@@ -3,7 +3,7 @@
 #include "Constants.h"
 #include <string>
 #include <winsock2.h>
-#include <vector>
+#include <regex>
 class User;
 class Room;
 
@@ -21,9 +21,8 @@ public:
 	void destroyRoom(Room * room);
 	void updateRoomList();
 	void updateRoomList(User * user);
-	std::vector<std::string> getRegisteredNameList();
 	bool doesRegisteredUsernameExist(std::string username);
-	void addRegisteredUsername(std::string username);
+	bool isValidUsername(std::string username);
 private:
 	unsigned short roomCount;
 	unsigned int port;
@@ -31,6 +30,6 @@ private:
 	bool listening;
 	Room * roomList[MAX_ROOMS];
 	User * userList[MAX_USERS];
-	std::vector<std::string> registeredNameList;
+	std::regex allowedUsernameChars;
 };
 #endif //SERVER_H_

@@ -26,7 +26,8 @@ public:
 	void setUserChatColor(unsigned short userChatColor);
 	unsigned short getUserNameColor() const;
 	unsigned short getUserChatColor() const;
-	unsigned short getFriendsListCount() const;
+	unsigned short load(std::string username);
+	void save();
 	void disconnect();
 	void sendMessage(User * const from, std::string message, bool personalMessage);
 	bool isFriend(std::string name);
@@ -40,7 +41,6 @@ private:
 	Server * server;
 	Room * room;
 	unsigned short userId;
-	unsigned short friendsListCount;
 	unsigned short userNameColor;
 	unsigned short userChatColor;
 	PacketHandler * packetHandler;

@@ -5,6 +5,7 @@
 #include "Constants.h"
 #include <iostream>
 #include <winsock2.h>
+#include <fstream>
 
 using namespace std;
 
@@ -17,7 +18,6 @@ User::User(Server * server, unsigned short userId, SOCKET socket) :
 	verified(false),
 	authenticated(false),
 	friendsList{""},
-	friendsListCount(0),
 	userNameColor(DEFAULT_COLOR),
 	userChatColor(DEFAULT_CHAT_COLOR),
 	packetHandler(new PacketHandler(server, this, socket)) {
@@ -48,6 +48,7 @@ string User::getPassword() const {
 /* Set the user's password */
 void User::setPassword(string password) {
 	this->password = password;
+	save();
 }
 
 /* Returns if the user is verified. */
@@ -73,12 +74,14 @@ bool User::isAuthenticated() const {
 /* Set the user's name color. */
 void User::setUserNameColor(unsigned short userNameColor) {
 	this->userNameColor = userNameColor;
+	save();
 
 }
 
 /* Set the user's chat color. */
 void User::setUserChatColor(unsigned short userChatColor) {
 	this->userChatColor = userChatColor;
+	save();
 }
 
 /* Return the user's name color. */
@@ -106,11 +109,6 @@ void User::setRoom(Room * room) {
 	this->room = room;
 }
 
-/* Return the number of friends. */
-unsigned short User::getFriendsListCount() const {
-	return friendsListCount;
-}
-
 /* Returns true if the name is on the user's friends list, otherwise false. */
 bool User::isFriend(std::string name) {
 	for (int i = 0; i < MAX_FRIENDS; i++) {
@@ -130,10 +128,10 @@ bool User::addFriend(std::string name) {
 	for (int i = 0; i < MAX_FRIENDS; i++) {
 		if (friendsList[i].empty()) {
 			friendsList[i] = name;
-			friendsListCount++;
 			updateFriendsList();
 			if(getRoom() != nullptr)
 				getRoom()->updateRoomList(this);
+			save();
 			return true;
 		}
 	}
@@ -148,10 +146,10 @@ bool User::removeFriend(std::string name) {
 	for (int i = 0; i < MAX_FRIENDS; i++) {
 		if (!friendsList[i].empty() && friendsList[i] == name) {
 			friendsList[i] = "";
-			friendsListCount--;
 			updateFriendsList();
 			if (getRoom() != nullptr)
 				getRoom()->updateRoomList(this);
+			save();
 			return true;
 		}
 	}
@@ -161,11 +159,9 @@ bool User::removeFriend(std::string name) {
 /* Sends the friends list to the user. */
 void User::updateFriendsList() {
 	Packet * p = packetHandler->constructPacket(UPDATE_FRIENDS_LIST_PACKET_ID);
-	*p << friendsListCount;
+	*p << (unsigned short)MAX_FRIENDS;
 	for (int i = 0; i < MAX_FRIENDS; i++) {
-		if (friendsList[i].empty())
-			continue;
-		User * friendUser = server->getUserByName(friendsList[i]);
+		User * friendUser = friendsList[i].empty() ? nullptr : server->getUserByName(friendsList[i]);
 		*p << (unsigned short)(friendUser != nullptr && friendUser->getPacketHandler()->isConnected() ? 1 : 0);
 		*p << friendsList[i];
 	}
@@ -192,6 +188,7 @@ void User::disconnect() {
 	else
 		writeThreadInstance.detach();
 	if (isAuthenticated()) {
+		save();
 		if (getRoom() != nullptr)
 			getRoom()->leaveRoom(this);
 		User ** userList = server->getUserList();
@@ -226,6 +223,68 @@ void User::sendMessage(User * const from, string message, bool personalMessage) 
 		"<" + to_string(DEFAULT_COLOR) + ">" + ": " +
 		"<" + to_string(from->getUserChatColor()) + ">" + message;
 	packetHandler->finializePacket(p);
+}
+
+/* Attempts to load the users data.
+	Returns LOAD_SUCCESS (0) if the user was loaded successfully.
+	Returns LOAD_FAILURE (1) if an error occured while loading.
+	Returns LOAD_NEW_USER (2) if the user file hasn't yet been created (new user, creates a new file for them.)
+*/
+unsigned short User::load(string username) {
+	unsigned short code = LOAD_FAILURE;
+	if (username.empty() || !isVerified())
+		return LOAD_FAILURE;
+	ifstream userFile;
+	try {
+		userFile.open(SAVE_DIRECTORY + username + ".txt");
+		if (userFile.is_open()) {
+			unsigned short version = 0;
+			userFile >> version;
+			switch (version) {
+			case 1:
+				userFile >> userNameColor;
+				userFile >> userChatColor;
+				userFile >> password;
+				for (unsigned short i = 0; i < MAX_FRIENDS; i++) {
+					userFile >> friendsList[i];
+				}
+				break;
+			default:
+				throw exception("Unsupported file version");
+			}
+			userFile.close();
+			code = LOAD_SUCCESS;
+		} else {
+			code = LOAD_NEW_USER;
+		}
+	} catch (exception e) {
+		code = LOAD_FAILURE;
+		cout << e.what();
+	}
+	return code;
+}
+
+/* Saves the user data. */
+void User::save() {
+	if (username.empty() || !isVerified())
+		return;
+	ofstream userFile;
+	try {
+		userFile.open(SAVE_DIRECTORY + username + ".txt");
+		if (!userFile.is_open()) {
+			throw exception("Could not open file to save.");
+		}
+		userFile << (unsigned short)1 << endl; //File version
+		userFile << userNameColor << endl;
+		userFile << userChatColor << endl;
+		userFile << password << endl;
+		for (unsigned short i = 0; i < MAX_FRIENDS; i++) {
+			userFile << friendsList[i] << endl;
+		}
+		userFile.close();
+	} catch (exception e) {
+		cout << e.what();
+	}
 }
 
 User::~User() {

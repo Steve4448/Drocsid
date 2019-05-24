@@ -76,10 +76,14 @@ void PacketHandler::readLoop() {
 								switch (returnCode) {
 								case AUTHENTICATION_INVALID_PASSWORD:
 									user->getConsoleRenderer()->pushBodyMessage("You've entered an invalid password.", ERROR_COLOR);
-									user->doCredentials(false);
+									user->doCredentials(true);
 									break;
 								case AUTHENTICATION_NAME_IN_USE:
 									user->getConsoleRenderer()->pushBodyMessage("That username is already in use.", ERROR_COLOR);
+									user->doCredentials();
+									break;
+								case AUTHENTICATION_INVALID_USERNAME:
+									user->getConsoleRenderer()->pushBodyMessage("Please enter a valid username using letters (a-z) and numbers only (0-9).", ERROR_COLOR);
 									user->doCredentials();
 									break;
 								case AUTHENTICATION_SUCCESS:
@@ -178,7 +182,6 @@ void PacketHandler::readLoop() {
 									unsigned short isOnline = 0;
 									*stream >> isOnline;
 									*stream >> name;
-									//cout << " " << name << "(" << isOnline << ")" << endl;
 									friendsList[i] = name;
 									friendListColors[i] = FRIEND_COLOR;
 								}
@@ -203,9 +206,13 @@ void PacketHandler::readLoop() {
 			}
 		}
 	} catch (PacketException & e) {
-		cerr << "Read loop error: " << e.what() << endl;
+		//cerr << "Read loop error: " << e.what() << endl;
+		user->getConsoleRenderer()->pushBodyMessage("Read loop error: ", ERROR_COLOR);
+		user->getConsoleRenderer()->pushBodyMessage(e.what(), ERROR_COLOR);
 	} catch (exception & e) {
-		cerr << "Read loop big error: " << e.what() << endl;
+		//cerr << "Read loop big error: " << e.what() << endl;
+		user->getConsoleRenderer()->pushBodyMessage("Read loop big error: ", ERROR_COLOR);
+		user->getConsoleRenderer()->pushBodyMessage(e.what(), ERROR_COLOR);
 	}
 	user->disconnect();
 }
