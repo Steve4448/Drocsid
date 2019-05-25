@@ -21,6 +21,8 @@ public:
 	std::string getUsername();
 	std::string getPassword();
 	ConsoleHandler * getConsoleRenderer();
+	void setInRoom(bool inRoom);
+	bool isInRoom();
 private:
 	unsigned int port;
 	std::string ip;
@@ -31,6 +33,7 @@ private:
 	std::string username;
 	std::string password;
 	bool connected;
+	bool inRoom;
 	ConsoleHandler * consoleRenderer;
 
 };

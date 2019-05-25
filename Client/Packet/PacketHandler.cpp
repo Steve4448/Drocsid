@@ -109,7 +109,7 @@ void PacketHandler::readLoop() {
 								unsigned short joinRoomStatusCode = 0;
 								*stream >> joinRoomStatusCode;
 								if (joinRoomStatusCode == ATTEMPT_JOIN_ROOM_SUCCESS) {
-									//TODO: Clear side room list
+									user->setInRoom(true);
 								} else {
 									user->getConsoleRenderer()->pushBodyMessage("Could not join room.", ERROR_COLOR);
 								}
@@ -117,7 +117,7 @@ void PacketHandler::readLoop() {
 							}
 						case LEAVE_ROOM_PACKET_ID:
 							{
-								//TODO: Clear side room list
+								user->setInRoom(false);
 								break;
 							}
 						case ROOM_STATUS_UPDATE_PACKET_ID:
@@ -134,7 +134,8 @@ void PacketHandler::readLoop() {
 									roomNames[i] = roomName;
 									roomColors[i] = DEFAULT_COLOR;
 								}
-								user->getConsoleRenderer()->updateTopRight(roomNames, roomColors, roomCount);
+								if(!user->isInRoom())
+									user->getConsoleRenderer()->updateTopRight(roomNames, roomColors, roomCount);
 								delete[] roomNames;
 								delete[] roomColors;
 								//cout << endl;
@@ -157,7 +158,8 @@ void PacketHandler::readLoop() {
 									userRoomList[i] = userName;
 									userRoomColors[i] = usernameColor;
 								}
-								user->getConsoleRenderer()->updateTopRight(userRoomList, userRoomColors, userCount);
+								if (user->isInRoom())
+									user->getConsoleRenderer()->updateTopRight(userRoomList, userRoomColors, userCount);
 								delete[] userRoomList;
 								delete[] userRoomColors;
 								//cout << endl;
