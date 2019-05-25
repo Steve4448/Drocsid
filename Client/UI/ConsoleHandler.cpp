@@ -144,12 +144,7 @@ void ConsoleHandler::scrollScreenUp() {
 		srctClipRect = srctScrollRect;
 		chiFill.Attributes = 0;
 		chiFill.Char.AsciiChar = (char)' ';
-		ScrollConsoleScreenBuffer(
-			outputStdHandle,         // screen buffer handle 
-			&srctScrollRect, // scrolling rectangle 
-			&srctClipRect,   // clipping rectangle 
-			coordDest,       // top left destination cell 
-			&chiFill);
+		ScrollConsoleScreenBuffer(outputStdHandle, &srctScrollRect, &srctClipRect, coordDest, &chiFill);
 		setCursor(1, curCursor.Y);
 	} else {
 		setCursor(1, curCursor.Y + 1);
@@ -207,29 +202,8 @@ void ConsoleHandler::pushBodyMessage(string message, unsigned short defaultColor
 	}
 	if(newLine)
 		scrollScreenUp();
-		//setCursor(0, curCursor.Y+1);
 	setColor(DEFAULT_COLOR);
 
-	
-	/*size_t openBracketPos = message.find('<');
-	size_t closeBracketPos = message.find('>');
-	if (openBracketPos != string::npos && closeBracketPos != string::npos) {
-		//cout << "Testing string: " << message << " " << openBracketPos << " " << closeBracketPos << endl;
-		//cout << "Color: " << message.substr(openBracketPos + 1, closeBracketPos - openBracketPos - 1) << endl;
-		//cout << "Begginning: " << message.substr(0, openBracketPos);
-		unsigned short color;
-		istringstream iss(message.substr(openBracketPos + 1, closeBracketPos - openBracketPos - 1));
-		iss >> color;
-		cout << message.substr(0, openBracketPos);
-		if (!iss.good()) {
-			setColor(color);
-		}
-		pushBodyMessage(message.substr(closeBracketPos + 1));
-	} else {
-		//cout << "Rest: " << message << endl;
-		cout << message;
-	}
-	setColor(DEFAULT_COLOR);*/
 	if (push) {
 		if (!currentInputString.empty()) {
 			setCursor(1, curCursor.Y);
@@ -662,7 +636,6 @@ void ConsoleHandler::readInput() {
 					break;
 				}
 
-				//TextRenderer::pushBody("What: " + ker.bKeyDown);
 				break;
 			case WINDOW_BUFFER_SIZE_EVENT:
 				resizeNeeded = true;
