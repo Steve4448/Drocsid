@@ -98,6 +98,8 @@ void PacketHandler::readLoop() {
 											break;
 										case LOAD_NEW_USER:
 											returnCode = AUTHENTICATION_SUCCESS;
+											user->setUsername(username);
+											user->setPassword(password);
 											break;
 										case LOAD_FAILURE:
 										default:
@@ -111,9 +113,6 @@ void PacketHandler::readLoop() {
 								finializePacket(p);
 								if (returnCode == AUTHENTICATION_SUCCESS) {
 									user->setAuthenticated(true);
-									user->setUsername(username);
-									user->setPassword(password);
-
 									user->sendServerMessage("Welcome to <11>Drocsid!", DEFAULT_COLOR);
 									user->sendServerMessage("Type /joinroom [name] to join/create a room.", DEFAULT_COLOR);
 									user->sendServerMessage("Type /help for more commands.", DEFAULT_COLOR);
@@ -340,7 +339,7 @@ Packet * PacketHandler::constructPacket(unsigned short id) {
 /* Finializes the packet by unlocking the mutex to let flush send the fully constructed packet. */
 void PacketHandler::finializePacket(Packet * packet, bool _flush) {
 	if (packet != constructingPacket)
-		throw runtime_error("Finialized packet wasn't the original?");
+		throw runtime_error("Finialized packet wasn't the original.");
 	constructingPacket = nullptr;
 	delete packet;
 	if (_flush)
@@ -366,12 +365,14 @@ void PacketHandler::flush(bool self) {
 		int sent = send(socket, peeker->getOutputBuffer() + totalSent, totalSize - totalSent, 0);
 		if (sent == SOCKET_ERROR) { //Possibly lost connection.
 			user->disconnect();
+			if (!self)
+				mtx.unlock();
 			return;
 		}
 		totalSent += sent;
 	}
 	if (totalSent > totalSize) {
-		throw exception("(Peeker) Sent more than total size.");
+		throw exception("Peeker sent more than total size.");
 	}
 	totalSent = 0;
 	totalSize = desiredSize;
@@ -379,12 +380,14 @@ void PacketHandler::flush(bool self) {
 		int sent = send(socket, stream->getOutputBuffer() + totalSent, totalSize - totalSent, 0);
 		if (sent == SOCKET_ERROR) { //Possibly lost connection.
 			user->disconnect();
+			if (!self)
+				mtx.unlock();
 			return;
 		}
 		totalSent += sent;
 	}
 	if (totalSent > totalSize) {
-		throw exception("(Stream) Sent more than total size.");
+		throw exception("Stream sent more than total size.");
 	}
 	peeker->resetWrite();
 	stream->resetWrite();

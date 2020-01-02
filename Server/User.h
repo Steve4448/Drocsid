@@ -15,6 +15,7 @@ public:
 	void setRoom(Room * room);
 	std::string getUsername() const;
 	void setUsername(std::string username);
+	std::string getUsernameLowercase() const;
 	std::string getPassword() const;
 	void setPassword(std::string password);
 	bool isVerified() const;
@@ -47,6 +48,7 @@ private:
 	std::thread readThreadInstance;
 	std::thread writeThreadInstance;
 	std::string username;
+	std::string usernameLowercase;
 	std::string password;
 	std::string friendsList[MAX_FRIENDS];
 	bool verified;

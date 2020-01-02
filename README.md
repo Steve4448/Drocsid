@@ -22,9 +22,9 @@ The client will first prompt for a IP and then port that points to the running D
 - [X] Store user information.
 - [X] Check user's stored password upon connection to verify credentials.
 - [X] A UI with 'widgets' where the user's friends list & the server's room list can be displayed.
+- [X] Case insensitive usernames.
 - [ ] Chat/server logs.
 - [ ] Ensure mutexes for packets are actually working properly. (I haven't had any issues yet, but I'm not confident in that code.)
-- [ ] Case insensitive usernames?
 
 ## Command List
 - /joinroom \[room name\]

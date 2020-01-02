@@ -1,4 +1,3 @@
-//Thread code implemented using information from http://www.cplusplus.com/reference/thread/thread/
 #include "User.h"
 #include "Room.h"
 #include "Server.h"
@@ -14,6 +13,7 @@ User::User(Server * server, unsigned short userId, SOCKET socket) :
 	room(nullptr),
 	userId(userId),
 	username(""),
+	usernameLowercase(""),
 	password(""),
 	verified(false),
 	authenticated(false),
@@ -35,9 +35,16 @@ string User::getUsername() const {
 	return username;
 }
 
+/* Returns the user's name in lowercase */
+string User::getUsernameLowercase() const {
+	return usernameLowercase;
+}
+
 /* Set the user's name. */
 void User::setUsername(string username) {
 	this->username = username;
+	this->usernameLowercase.resize(username.size());
+	transform(username.begin(), username.end(), usernameLowercase.begin(), ::tolower);
 }
 
 /* Returns the user's password. */
@@ -234,6 +241,7 @@ unsigned short User::load(string username) {
 	unsigned short code = LOAD_FAILURE;
 	if (username.empty() || !isVerified())
 		return LOAD_FAILURE;
+	transform(username.begin(), username.end(), username.begin(), ::tolower);
 	ifstream userFile;
 	try {
 		userFile.open(SAVE_DIRECTORY + username + ".txt");
@@ -241,7 +249,10 @@ unsigned short User::load(string username) {
 			unsigned short version = 0;
 			userFile >> version;
 			switch (version) {
-			case 1:
+			case 2:
+				userFile >> this->username;
+				usernameLowercase.resize(this->username.size());
+				transform(this->username.begin(), this->username.end(), usernameLowercase.begin(), ::tolower);
 				userFile >> userNameColor;
 				userFile >> userChatColor;
 				userFile >> password;
@@ -266,15 +277,16 @@ unsigned short User::load(string username) {
 
 /* Saves the user data. */
 void User::save() {
-	if (username.empty() || !isVerified())
+	if (usernameLowercase.empty() || !isVerified())
 		return;
 	ofstream userFile;
 	try {
-		userFile.open(SAVE_DIRECTORY + username + ".txt");
+		userFile.open(SAVE_DIRECTORY + usernameLowercase + ".txt");
 		if (!userFile.is_open()) {
 			throw exception("Could not open file to save.");
 		}
-		userFile << (unsigned short)1 << endl; //File version
+		userFile << (unsigned short)2 << endl; //File version
+		userFile << username << endl;
 		userFile << userNameColor << endl;
 		userFile << userChatColor << endl;
 		userFile << password << endl;

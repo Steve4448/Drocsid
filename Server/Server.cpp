@@ -201,10 +201,11 @@ User ** Server::getUserList() {
 - Returns nullptr if no one was found by that name.
 - Returns the user pointer if the name was found. */
 User * Server::getUserByName(string name) {
+	transform(name.begin(), name.end(), name.begin(), ::tolower);
 	for (unsigned short i = 0; i < MAX_USERS; i++) {
 		if (userList[i] == nullptr)
 			continue;
-		if (userList[i]->getUsername() == name)
+		if (userList[i]->getUsernameLowercase() == name)
 			return userList[i];
 	}
 	return nullptr;
@@ -220,6 +221,8 @@ bool Server::isValidUsername(string username) {
 bool Server::doesRegisteredUsernameExist(string username) {
 	if (!isValidUsername(username))
 		return false;
+	transform(username.begin(), username.end(), username.begin(), ::tolower);
+	cout << username;
 	ifstream saveFile;
 	saveFile.open(SAVE_DIRECTORY + username + ".txt");
 	bool exists = saveFile.is_open();
