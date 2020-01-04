@@ -21,6 +21,20 @@ User::User(Server * server, unsigned short userId, SOCKET socket) :
 	userNameColor(DEFAULT_COLOR),
 	userChatColor(DEFAULT_CHAT_COLOR),
 	packetHandler(new PacketHandler(server, this, socket)) {
+	sockaddr_in socketAddr;
+	int addrLen = sizeof(socketAddr);
+	if (getsockname(socket, (LPSOCKADDR)&socketAddr, &addrLen) == SOCKET_ERROR) {
+		cerr << "getsockname failed with: " << WSAGetLastError();
+		ip = "error";
+	} else {
+		ip.resize(addrLen);
+		inet_ntop(AF_INET, &socketAddr.sin_addr, const_cast<char *>(ip.c_str()), addrLen);
+		size_t firstSpace = ip.find('\0');
+		if (firstSpace != string::npos) {
+			ip = ip.substr(0, firstSpace);
+		}
+	}
+	server->log(ip + " connected.");
 	readThreadInstance = thread(&PacketHandler::readLoop, packetHandler);
 	writeThreadInstance = thread(&PacketHandler::writeLoop, packetHandler);
 }
@@ -297,6 +311,11 @@ void User::save() {
 	} catch (exception e) {
 		cout << e.what();
 	}
+}
+
+/* Returns the user's IP address. */
+string User::getIp() {
+	return ip;
 }
 
 User::~User() {

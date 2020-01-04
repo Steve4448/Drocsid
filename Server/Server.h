@@ -3,7 +3,9 @@
 #include "Constants.h"
 #include <string>
 #include <winsock2.h>
+#include <Ws2tcpip.h>
 #include <regex>
+#include <fstream>
 class User;
 class Room;
 
@@ -23,6 +25,7 @@ public:
 	void updateRoomList(User * user);
 	bool doesRegisteredUsernameExist(std::string username);
 	bool isValidUsername(std::string username);
+	void log(std::string line);
 private:
 	unsigned short roomCount;
 	unsigned int port;
@@ -31,5 +34,6 @@ private:
 	Room * roomList[MAX_ROOMS];
 	User * userList[MAX_USERS];
 	std::regex allowedUsernameChars;
+	std::ofstream logFile;
 };
 #endif //SERVER_H_

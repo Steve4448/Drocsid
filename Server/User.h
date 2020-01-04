@@ -35,6 +35,7 @@ public:
 	bool addFriend(std::string name);
 	bool removeFriend(std::string name);
 	void updateFriendsList();
+	std::string getIp();
 	std::string * getFriends();
 	PacketHandler * getPacketHandler();
 	void sendServerMessage(std::string message, unsigned short messageColor = ERROR_COLOR);
@@ -51,6 +52,7 @@ private:
 	std::string usernameLowercase;
 	std::string password;
 	std::string friendsList[MAX_FRIENDS];
+	std::string ip;
 	bool verified;
 	bool authenticated;
 };

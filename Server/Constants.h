@@ -24,6 +24,7 @@
 #define SERVER_MESSAGE_PACKET_ID 8
 #define UPDATE_FRIENDS_LIST_PACKET_ID 9
 
+#define LOG_DIRECTORY "./"
 #define SAVE_DIRECTORY "./users/"
 #define LOAD_SUCCESS 0
 #define LOAD_FAILURE 1

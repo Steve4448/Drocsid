@@ -88,18 +88,22 @@ void PacketHandler::readLoop() {
 								unsigned short returnCode = AUTHENTICATION_FAILURE;
 								if (username.empty() || !server->isValidUsername(username)) {
 									returnCode = AUTHENTICATION_INVALID_USERNAME;
+									server->log(user->getIp() + " tried to use invalid username: " + username);
 								} else {
 									if (server->getUserByName(username) != nullptr) {
 										returnCode = AUTHENTICATION_NAME_IN_USE;
+										server->log(user->getIp() + " tried to use username already in use: " + username);
 									} else {
 										switch (user->load(username)) {
 										case LOAD_SUCCESS:
 											returnCode = user->getPassword() == password ? AUTHENTICATION_SUCCESS : AUTHENTICATION_INVALID_PASSWORD;
+											server->log(user->getPassword() == password ? user->getUsername() + " has logged in from " + user->getIp() + "." : user->getIp() + " has used an invalid password for user: " + user->getUsername() + ".");
 											break;
 										case LOAD_NEW_USER:
 											returnCode = AUTHENTICATION_SUCCESS;
 											user->setUsername(username);
 											user->setPassword(password);
+											server->log(user->getIp() + " has created a new username: " + user->getUsername());
 											break;
 										case LOAD_FAILURE:
 										default:
@@ -136,14 +140,13 @@ void PacketHandler::readLoop() {
 								}
 								string message = "";
 								*stream >> message;
-								cout << message << endl;
 								if (message.length() > 0) {
 									bool validCommand = true;
 									if (message.at(0) == '/') {
 										size_t spacePos = message.find(' ');
 										string command = (spacePos == string::npos ? message.substr(1, message.length()) : message.substr(1, spacePos-1));
 										string arguments = (spacePos == string::npos ? "" : message.substr(spacePos+1, message.length()));
-										cout << "command: " << command << ", arguments: " << arguments << endl;
+										server->log((user->getRoom() != nullptr ? "<" + user->getRoom()->getName() + "> " : "") + user->getUsername() + " used command: " + command + " with arguments: " + arguments);
 										if (command == "joinroom") {
 											if (spacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
@@ -273,6 +276,7 @@ void PacketHandler::readLoop() {
 											validCommand = false;
 										}
 									} else if(user->getRoom() != nullptr) {
+										server->log("<" + user->getRoom()->getName() + "> " + user->getUsername() + ": " + message);
 										user->getRoom()->sendMessage(user, message);
 									} else {
 										validCommand = false;

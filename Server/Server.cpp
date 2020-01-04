@@ -54,7 +54,12 @@ Server::Server(unsigned int port) :
 	sSocket(INVALID_SOCKET),
 	listening(true),
 	roomCount(0),
-	allowedUsernameChars("^[a-zA-Z0-9]*$") {}
+	allowedUsernameChars("^[a-zA-Z0-9]*$") {
+	logFile.open(LOG_DIRECTORY + (string)"log.txt", ofstream::app);
+	if (!logFile.is_open()) {
+		throw exception("Could not open log file.");
+	}
+}
 
 /* Starts the server
 winsock code implemented using information from https://docs.microsoft.com/en-us/windows/desktop/winsock/winsock-server-application
@@ -107,7 +112,7 @@ void Server::doListen() {
 		unsigned short slot = -1;
 		SOCKET userSocket = accept(sSocket, NULL, NULL);
 		if (userSocket == INVALID_SOCKET) {
-			cout << "accept failed with error: " << WSAGetLastError();
+			cerr << "accept failed with error: " << WSAGetLastError();
 			continue;
 		}
 
@@ -119,10 +124,8 @@ void Server::doListen() {
 		}
 		if (slot != -1) {
 			userList[slot] = new User(this, slot, userSocket);
-			cout << "New user connected." << endl;
-		}
-		else {
-			cout << "User attempted a connection but the server is full." << endl;
+		} else {
+			cerr << "User attempted a connection but the server is full." << endl;
 			closesocket(userSocket);
 		}
 	}
@@ -146,6 +149,7 @@ Room * Server::makeRoom(User * owner, string roomName) {
 	}
 	if (slot != -1) {
 		roomCount++;
+		log(owner->getUsername() + " created room " + roomName + ".");
 		return (roomList[slot] = new Room(this, owner, roomName));
 	}
 	return nullptr;
@@ -155,6 +159,7 @@ Room * Server::makeRoom(User * owner, string roomName) {
 void Server::destroyRoom(Room * room) {
 	for (unsigned short i = 0; i < MAX_ROOMS; i++) {
 		if (roomList[i] == room) {
+			log("Room " + room->getName() + " destroyed.");
 			roomList[i]->ensureEmpty();
 			delete roomList[i];
 			roomList[i] = nullptr;
@@ -187,7 +192,7 @@ void Server::updateRoomList(User * user) {
 
 /* Removes the user from the user list and deletes them. */
 void Server::removeUser(User * user) {
-	cout << "User disconnected." << endl;
+	log((user->getUsername().empty() ? user->getIp() : user->getUsername()) + " disconnected.");
 	userList[user->getUserId()] = nullptr;
 	delete user;
 }
@@ -228,6 +233,12 @@ bool Server::doesRegisteredUsernameExist(string username) {
 	bool exists = saveFile.is_open();
 	saveFile.close();
 	return exists;
+}
+
+/* Appends the line to the log file and also outputs it to the console. */
+void Server::log(string line) {
+	cout << line << endl;
+	logFile << line << endl;
 }
 
 Server::~Server() {
