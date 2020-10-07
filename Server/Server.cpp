@@ -108,8 +108,7 @@ bool Server::start() {
 
 /* Listens for connections and upon a connection constructs a user. */
 void Server::doListen() {
-	while (listening) {
-		unsigned short slot = -1;
+	mainLoop: while (listening) {
 		SOCKET userSocket = accept(sSocket, NULL, NULL);
 		if (userSocket == INVALID_SOCKET) {
 			cerr << "accept failed with error: " << WSAGetLastError();
@@ -118,16 +117,12 @@ void Server::doListen() {
 
 		for (unsigned short i = 0; i < MAX_USERS; i++) {
 			if (userList[i] == nullptr) {
-				slot = i;
-				break;
+				userList[i] = new User(this, i, userSocket);
+				goto mainLoop;
 			}
 		}
-		if (slot != -1) {
-			userList[slot] = new User(this, slot, userSocket);
-		} else {
-			cerr << "User attempted a connection but the server is full." << endl;
-			closesocket(userSocket);
-		}
+		cerr << "User attempted a connection but the server is full." << endl;
+		closesocket(userSocket);
 	}
 }
 
@@ -140,17 +135,12 @@ Room ** Server::getRoomList() {
 - Returns nullptr if there is no room spaces left.
 - Returns address of room if a room was successfully made. */
 Room * Server::makeRoom(User * owner, string roomName) {
-	unsigned short slot = -1;
 	for (unsigned short i = 0; i < MAX_ROOMS; i++) {
 		if (roomList[i] == nullptr) {
-			slot = i;
-			break;
+			roomCount++;
+			log(owner->getUsername() + " created room " + roomName + ".");
+			return (roomList[i] = new Room(this, owner, roomName));
 		}
-	}
-	if (slot != -1) {
-		roomCount++;
-		log(owner->getUsername() + " created room " + roomName + ".");
-		return (roomList[slot] = new Room(this, owner, roomName));
 	}
 	return nullptr;
 }
@@ -164,6 +154,7 @@ void Server::destroyRoom(Room * room) {
 			delete roomList[i];
 			roomList[i] = nullptr;
 			roomCount--;
+			break;
 		}
 	}
 	updateRoomList();
@@ -227,7 +218,6 @@ bool Server::doesRegisteredUsernameExist(string username) {
 	if (!isValidUsername(username))
 		return false;
 	transform(username.begin(), username.end(), username.begin(), ::tolower);
-	cout << username;
 	ifstream saveFile;
 	saveFile.open(SAVE_DIRECTORY + username + ".txt");
 	bool exists = saveFile.is_open();
