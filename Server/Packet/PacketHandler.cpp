@@ -215,7 +215,7 @@ void PacketHandler::readLoop() {
 											for (unsigned short i = 0; i < MAX_FRIENDS; i++) {
 												if (friends[i].empty())
 													continue;
-												user->sendServerMessage(friends[i], FRIEND_COLOR);
+												user->sendServerMessage(friends[i], server->getUserByName(friends[i]) == nullptr ? FRIEND_OFFLINE_COLOR : FRIEND_COLOR);
 											}
 										} else if (command == "pm") {
 											size_t nextSpacePos = arguments.find(' ');

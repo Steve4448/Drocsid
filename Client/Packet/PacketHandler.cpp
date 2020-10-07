@@ -185,7 +185,7 @@ void PacketHandler::readLoop() {
 									*stream >> isOnline;
 									*stream >> name;
 									friendsList[i] = name;
-									friendListColors[i] = FRIEND_COLOR;
+									friendListColors[i] = isOnline ? FRIEND_COLOR : FRIEND_OFFLINE_COLOR;
 								}
 								user->getConsoleRenderer()->updateBottomRight(friendsList, friendListColors, friendCount);
 								//cout << endl;
