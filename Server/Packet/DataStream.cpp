@@ -169,7 +169,7 @@ DataStream & operator>>(DataStream & dataStream, string & toRead) {
 	tempArray[stringLength] = '\0';
 	memcpy(tempArray, dataStream.getInputBuffer() + curIdx, stringLength);
 	toRead.append(tempArray);
-	delete tempArray;
+	delete[] tempArray;
 	return dataStream;
 }
 
