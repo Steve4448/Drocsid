@@ -197,11 +197,13 @@ User ** Server::getUserList() {
 - Returns nullptr if no one was found by that name.
 - Returns the user pointer if the name was found. */
 User * Server::getUserByName(string name) {
+	if (name.empty())
+		return nullptr;
 	transform(name.begin(), name.end(), name.begin(), ::tolower);
 	for (unsigned short i = 0; i < MAX_USERS; i++) {
 		if (userList[i] == nullptr)
 			continue;
-		if (userList[i]->getUsernameLowercase() == name)
+		if (userList[i]->isAuthenticated() && userList[i]->getUsernameLowercase() == name)
 			return userList[i];
 	}
 	return nullptr;
