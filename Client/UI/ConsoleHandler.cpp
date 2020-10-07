@@ -154,7 +154,7 @@ void ConsoleHandler::scrollScreenUp() {
 void ConsoleHandler::pushBodyMessage(string message, unsigned short defaultColor, bool newLine, bool push) {
 	if (push) {
 		outputMutex.lock();
-		if(curBodyMessageIdx < MAX_BODY_MESSAGES)
+		if(curBodyMessageIdx < MAX_BODY_MESSAGES-1)
 			messageHistory[curBodyMessageIdx++] = new MessageEntry(message, defaultColor, newLine);
 		else {
 			delete messageHistory[0];
