@@ -21,34 +21,25 @@ void Room::sendMessage(User * user, std::string message) {
 }
 
 /* Adds the user to the room and updates everyones room user list. */
-void Room::joinRoom(User * user) {
-	if (userCount >= MAX_ROOM_USERS)
-		return;
-	unsigned short slot = -1;
+void Room::joinRoom(User* user) {
 	for (unsigned short i = 0; i < MAX_ROOM_USERS; i++) {
 		if (userList[i] == nullptr) {
-			slot = i;
+			userList[i] = user;
+			userCount++;
+			user->setRoom(this);
 			break;
 		}
 	}
-	Packet * p = user->getPacketHandler()->constructPacket(ATTEMPT_JOIN_ROOM_PACKET_ID);
-	*p << (unsigned short)(slot == -1 ? ATTEMPT_JOIN_ROOM_FAILURE : ATTEMPT_JOIN_ROOM_SUCCESS);
+
+	Packet* p = user->getPacketHandler()->constructPacket(ATTEMPT_JOIN_ROOM_PACKET_ID);
+	*p << (unsigned short)(user->getRoom() == nullptr ? ATTEMPT_JOIN_ROOM_FAILURE : ATTEMPT_JOIN_ROOM_SUCCESS);
 	user->getPacketHandler()->finializePacket(p);
 
-	if (slot == -1) {
-		return;
-	} else {
-		userList[slot] = user;
-		userCount++;
-		user->setRoom(this);
+	if (user->getRoom() != nullptr) {
+		sendMessage(user, "has joined the room.");
+		updateRoomList();
+		server->updateRoomList();
 	}
-	for (unsigned short i = 0; i < MAX_ROOM_USERS; i++) {
-		if (userList[i] == nullptr)
-			continue;
-		userList[i]->sendMessage(user, "has joined the room.", false);
-	}
-	updateRoomList();
-	server->updateRoomList();
 }
 
 /* Removes the user from the room and updates everyones room user list.
