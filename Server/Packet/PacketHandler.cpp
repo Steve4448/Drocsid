@@ -262,6 +262,13 @@ void PacketHandler::readLoop() {
 											} catch (invalid_argument &) {
 												user->sendServerMessage("Please type a proper integer for your desired color.");
 											}
+										} else if (command == "colors") {
+											string output = "";
+											for (byte i = 0; i < 255; i++) {
+												string num = to_string(i);
+												output += "<" + num + ">" + num + " ";
+											}
+											user->sendServerMessage(output, DEFAULT_COLOR);
 										} else if (command == "help" || command == "h" || command == "?" || command == "commands") {
 											user->sendServerMessage("/joinroom [room name]", DEFAULT_COLOR);
 											user->sendServerMessage("/leaveroom", DEFAULT_COLOR);
@@ -271,6 +278,7 @@ void PacketHandler::readLoop() {
 											user->sendServerMessage("/pm [username] [message]", DEFAULT_COLOR);
 											user->sendServerMessage("/settextcolor [color number]", DEFAULT_COLOR);
 											user->sendServerMessage("/setnamecolor [color number]", DEFAULT_COLOR);
+											user->sendServerMessage("/colors", DEFAULT_COLOR);
 										} else {
 											validCommand = false;
 										}

@@ -35,3 +35,4 @@ The client will first prompt for a IP and then port that points to the running D
 - /pm \[username\] \[message\]
 - /settextcolor \[color number\]
 - /setnamecolor \[color number\]
+- /colors
