@@ -1,5 +1,6 @@
 #include "DataStream.h"
 #include <string>
+#include <iostream>
 using namespace std;
 
 Cursor::Cursor(unsigned short size) : size(size), position(0) {
@@ -109,9 +110,9 @@ void DataStream::resetRead() {
 }
 
 /* Writes an integer to the output stream. */
-DataStream & operator<<(DataStream & dataStream, const int & toWrite) {
-	Cursor & idx = dataStream.getWriteIndex();
-	char * buf = dataStream.getOutputBuffer();
+DataStream& operator<<(DataStream& dataStream, const int& toWrite) {
+	Cursor& idx = dataStream.getWriteIndex();
+	char* buf = dataStream.getOutputBuffer();
 	buf[idx++] = (toWrite >> 24) & 0xFF;
 	buf[idx++] = (toWrite >> 16) & 0xFF;
 	buf[idx++] = (toWrite >> 8) & 0xFF;
@@ -120,31 +121,31 @@ DataStream & operator<<(DataStream & dataStream, const int & toWrite) {
 }
 
 /* Reads an integer from the input stream. */
-DataStream & operator>>(DataStream & dataStream, int & toRead) {
-	Cursor & idx = dataStream.getReadIndex();
-	char * buf = dataStream.getInputBuffer();
-	toRead = ((buf[idx++] << 24) & 0xFF)
-		+ ((buf[idx++] << 16) & 0xFF)
-		+ ((buf[idx++] << 8) & 0xFF)
-		+ (buf[idx++] & 0xFF);
+DataStream& operator>>(DataStream& dataStream, int& toRead) {
+	Cursor& idx = dataStream.getReadIndex();
+	char* buf = dataStream.getInputBuffer();
+	toRead = ((buf[idx++] & 0xFF) << 24)
+		| ((buf[idx++] & 0xFF) << 16)
+		| ((buf[idx++] & 0xFF) << 8)
+		| (buf[idx++] & 0xFF);
 	return dataStream;
 }
 
 /* Writes an unsigned short to the output stream. */
-DataStream & operator<<(DataStream & dataStream, const unsigned short & toWrite) {
-	Cursor & idx = dataStream.getWriteIndex();
-	char * buf = dataStream.getOutputBuffer();
+DataStream& operator<<(DataStream& dataStream, const unsigned short& toWrite) {
+	Cursor& idx = dataStream.getWriteIndex();
+	char* buf = dataStream.getOutputBuffer();
 	buf[idx++] = (toWrite >> 8) & 0xFF;
 	buf[idx++] = toWrite & 0xFF;
 	return dataStream;
 }
 
 /* Reads an unsigned short from the input stream. */
-DataStream & operator>>(DataStream & dataStream, unsigned short & toRead) {
-	Cursor & idx = dataStream.getReadIndex();
-	char * buf = dataStream.getInputBuffer();
-	toRead = ((buf[idx++] << 8) & 0xFF)
-		+ (buf[idx++] & 0xFF);
+DataStream& operator>>(DataStream& dataStream, unsigned short& toRead) {
+	Cursor& idx = dataStream.getReadIndex();
+	char* buf = dataStream.getInputBuffer();
+	toRead = ((buf[idx++] & 0xFF) << 8)
+		| (buf[idx++] & 0xFF);
 	return dataStream;
 }
 

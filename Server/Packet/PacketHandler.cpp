@@ -45,7 +45,9 @@ void PacketHandler::readLoop() {
 			if ((in = recv(socket, peeker->getInputBuffer(), 2, MSG_PEEK)) >= 2) {
 				recv(socket, peeker->getInputBuffer(), 2, 0); //Consume those 2 bytes.
 				*peeker >> totalSize;
-				if (totalSize >= stream->getSize())
+				if (totalSize <= 0)
+					throw PacketException("Invalid payload size " + to_string(totalSize));
+				else if (totalSize >= stream->getSize())
 					throw PacketException("Too much data received!");
 				while (connected && totalRead < totalSize) {
 					if ((in = recv(socket, stream->getInputBuffer() + totalRead, totalSize - totalRead, 0)) != SOCKET_ERROR) { //Fully read
@@ -59,9 +61,6 @@ void PacketHandler::readLoop() {
 				if (totalRead == totalSize) {
 					while (connected && totalRead > stream->getReadIndex().getPosition()) { //Process packets until all packets in the chunk of data are consumed.
 						*stream >> packetId;
-						if (packetId < 0) {
-							throw PacketException("Invalid packet id " + packetId);
-						}
 						switch (packetId) {
 						case HANDSHAKE_PACKET_ID:
 							{
@@ -288,6 +287,8 @@ void PacketHandler::readLoop() {
 								}
 								break;
 							}
+						default:
+							throw PacketException("Invalid packet id " + to_string(packetId));
 						}
 					}
 					totalRead = 0;

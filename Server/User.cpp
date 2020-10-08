@@ -228,7 +228,6 @@ void User::sendServerMessage(string message, unsigned short messageColor) {
 	Packet * p = packetHandler->constructPacket(SERVER_MESSAGE_PACKET_ID);
 	*p << "<" + to_string(messageColor) + ">" + message;
 	packetHandler->finializePacket(p);
-
 }
 
 /* Send a room/private message from another user to the user. */

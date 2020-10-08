@@ -123,10 +123,10 @@ DataStream & operator<<(DataStream & dataStream, const int & toWrite) {
 DataStream & operator>>(DataStream & dataStream, int & toRead) {
 	Cursor & idx = dataStream.getReadIndex();
 	char * buf = dataStream.getInputBuffer();
-	toRead = ((buf[idx++] << 24) & 0xFF)
-		+ ((buf[idx++] << 16) & 0xFF)
-		+ ((buf[idx++] << 8) & 0xFF)
-		+ (buf[idx++] & 0xFF);
+	toRead = ((buf[idx++] & 0xFF) << 24)
+			| ((buf[idx++] & 0xFF) << 16)
+			| ((buf[idx++] & 0xFF) << 8)
+			| (buf[idx++] & 0xFF);
 	return dataStream;
 }
 
@@ -143,8 +143,8 @@ DataStream & operator<<(DataStream & dataStream, const unsigned short & toWrite)
 DataStream & operator>>(DataStream & dataStream, unsigned short & toRead) {
 	Cursor & idx = dataStream.getReadIndex();
 	char * buf = dataStream.getInputBuffer();
-	toRead = ((buf[idx++] << 8) & 0xFF)
-		+ (buf[idx++] & 0xFF);
+	toRead = ((buf[idx++] & 0xFF) << 8)
+			| (buf[idx++] & 0xFF);
 	return dataStream;
 }
 
