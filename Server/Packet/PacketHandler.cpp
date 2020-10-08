@@ -240,6 +240,7 @@ void PacketHandler::readLoop() {
 											if (spacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
 												user->sendServerMessage("Try as /settextcolor [color number]");
+												user->sendServerMessage("Type /colors for a list of available colors.");
 												break;
 											}
 											try {
@@ -253,6 +254,7 @@ void PacketHandler::readLoop() {
 											if (spacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
 												user->sendServerMessage("Try as /setnamecolor [color number]");
+												user->sendServerMessage("Type /colors for a list of available colors.");
 												break;
 											}
 											try {
