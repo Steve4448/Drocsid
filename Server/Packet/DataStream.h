@@ -39,11 +39,13 @@ private:
 	friend DataStream & operator<<(DataStream & dataStream, const std::string & toWrite);
 	friend DataStream & operator<<(DataStream & dataStream, const int & toWrite);
 	friend DataStream & operator<<(DataStream & dataStream, const unsigned short & toWrite);
+	friend DataStream& operator<<(DataStream& dataStream, const bool& toWrite);
 
 	/* Reading Variables*/
 	friend DataStream & operator>>(DataStream & dataStream, std::string & toRead);
 	friend DataStream & operator>>(DataStream & dataStream, int & toRead);
 	friend DataStream & operator>>(DataStream & dataStream, unsigned short & toRead);
+	friend DataStream& operator>>(DataStream& dataStream, bool & toRead);
 };
 
 #endif //DATASTREAM_H_

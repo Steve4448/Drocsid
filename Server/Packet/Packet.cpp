@@ -47,3 +47,15 @@ Packet & operator>>(Packet & packet, string & toRead) {
 	*packet.stream >> toRead;
 	return packet;
 }
+
+/* Reads a boolean from the input stream. */
+Packet& operator>>(Packet& packet, bool& toRead) {
+	*packet.stream >> toRead;
+	return packet;
+}
+
+/* Writes boolean to the output stream. */
+Packet& operator<<(Packet& packet, const bool& toWrite) {
+	*packet.stream << toWrite;
+	return packet;
+}

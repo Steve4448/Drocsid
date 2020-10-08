@@ -174,6 +174,23 @@ DataStream & operator>>(DataStream & dataStream, string & toRead) {
 	return dataStream;
 }
 
+/* Reads a boolean from the input stream. */
+DataStream& operator>>(DataStream& dataStream, bool& toRead) {
+	Cursor& idx = dataStream.getReadIndex();
+	char* buf = dataStream.getInputBuffer();
+	toRead = buf[idx++] == 1;
+	return dataStream;
+}
+
+
+/* Writes a boolean to the output stream.. */
+DataStream& operator<<(DataStream& dataStream, const bool& toWrite) {
+	Cursor& idx = dataStream.getWriteIndex();
+	char* buf = dataStream.getOutputBuffer();
+	buf[idx++] = toWrite ? 1 : 0;
+	return dataStream;
+}
+
 DataStream::~DataStream() {
 	delete[] inBuf;
 	delete[] outBuf;
