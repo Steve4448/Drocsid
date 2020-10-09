@@ -5,8 +5,7 @@ Packet::Packet(DataStream* stream, unsigned short packetId) : stream(stream), pa
 	*this << (int)getId();
 }
 
-Packet::~Packet() {
-}
+Packet::~Packet() {}
 
 unsigned short Packet::getId() const {
 	return packetId;

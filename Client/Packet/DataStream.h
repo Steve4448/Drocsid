@@ -17,8 +17,7 @@ private:
 	unsigned short position;
 };
 
-class DataStream
-{
+class DataStream {
 public:
 	DataStream(unsigned short size);
 	~DataStream();

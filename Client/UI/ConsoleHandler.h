@@ -37,15 +37,14 @@ private:
 	unsigned short color;
 };
 
-class ConsoleHandler
-{
+class ConsoleHandler {
 public:
 	ConsoleHandler();
 	~ConsoleHandler();
 	std::string getBlockingInput(std::string promptMessage = "");
 	void pushBodyMessage(std::string message, unsigned short defaultColor = DEFAULT_COLOR, bool newLine = true, bool push = true);
-	void updateTopRight(std::string * names, unsigned short * colors, unsigned short count, bool push = true);
-	void updateBottomRight(Friend ** friends, unsigned short count, bool push = true);
+	void updateTopRight(std::string* names, unsigned short* colors, unsigned short count, bool push = true);
+	void updateBottomRight(Friend** friends, unsigned short count, bool push = true);
 	void updateBottomRight(std::string* names, unsigned short* colors, unsigned short count, bool push = true);
 private:
 	bool running;
@@ -69,12 +68,12 @@ private:
 	uint64_t lastResizeCheck;
 	bool resizeNeeded;
 
-	MessageEntry * messageHistory[MAX_BODY_MESSAGES];
+	MessageEntry* messageHistory[MAX_BODY_MESSAGES];
 	unsigned short curBodyMessageIdx;
 	COORD topWidgetStart;
 	COORD bottomWidgetStart;
-	WidgetEntry * topWidgetHistory[MAX_WIDGET_MESSAGES];
-	WidgetEntry * bottomWidgetHistory[MAX_WIDGET_MESSAGES];
+	WidgetEntry* topWidgetHistory[MAX_WIDGET_MESSAGES];
+	WidgetEntry* bottomWidgetHistory[MAX_WIDGET_MESSAGES];
 
 	void readInput();
 	void handleResize();

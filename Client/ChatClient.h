@@ -21,7 +21,7 @@ public:
 	void disconnect();
 	std::string getUsername();
 	std::string getPassword();
-	ConsoleHandler * getConsoleRenderer();
+	ConsoleHandler* getConsoleRenderer();
 	void setInRoom(bool inRoom);
 	bool isInRoom();
 	void setFriendsList(unsigned short friendsListSize, Friend** friendsList);
@@ -33,14 +33,14 @@ private:
 	SOCKET cSocket;
 	std::thread readInstance;
 	std::thread inputInstance;
-	PacketHandler * packetHandler;
+	PacketHandler* packetHandler;
 	std::string username;
 	std::string password;
 	unsigned short friendsListSize;
-	Friend ** friendsList;
+	Friend** friendsList;
 	bool connected;
 	bool inRoom;
-	ConsoleHandler * consoleRenderer;
+	ConsoleHandler* consoleRenderer;
 
 };
 #endif //CHAT_CLIENT_H_

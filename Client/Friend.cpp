@@ -2,7 +2,7 @@
 #include <algorithm>
 using namespace std;
 
-Friend::Friend(string name, bool online) : 
+Friend::Friend(string name, bool online) :
 	name(name),
 	lowercaseName(name),
 	online(online) {

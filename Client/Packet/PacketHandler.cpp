@@ -5,14 +5,13 @@
 #include "../Exception/PacketException.h"
 using namespace std;
 
-PacketHandler::PacketHandler(ChatClient * const clientInstance, SOCKET socket) :
+PacketHandler::PacketHandler(ChatClient* const clientInstance, SOCKET socket) :
 	user(clientInstance),
 	socket(socket),
 	connected(true),
 	constructingPacket(nullptr),
 	peeker(new DataStream(4)),
-	stream(new DataStream(BUFFER_LENGTH)) {
-}
+	stream(new DataStream(BUFFER_LENGTH)) {}
 
 /* Continuously reads data from the socket.
 	It first will peek to see how many bytes are available to read.
@@ -36,98 +35,98 @@ void PacketHandler::readLoop() {
 	unsigned short totalSize = 0;
 	unsigned short totalRead = 0;
 	try {
-		while (connected) {
+		while(connected) {
 			//Peek to see if we have 2 or more bytes available to read to get how much data will be in the next chunk.
-			if ((in = recv(socket, peeker->getInputBuffer(), 2, MSG_PEEK)) >= 2) {
+			if((in = recv(socket, peeker->getInputBuffer(), 2, MSG_PEEK)) >= 2) {
 				recv(socket, peeker->getInputBuffer(), 2, 0); //Consume those 2 bytes.
 				*peeker >> totalSize;
-				if (totalSize <= 0)
+				if(totalSize <= 0)
 					throw PacketException("Invalid payload size " + to_string(totalSize));
-				else if (totalSize >= stream->getSize())
+				else if(totalSize >= stream->getSize())
 					throw PacketException("Too much data received!");
-				while (connected && totalRead < totalSize) {
-					if ((in = recv(socket, stream->getInputBuffer() + totalRead, totalSize - totalRead, 0)) != SOCKET_ERROR) { //Fully read
+				while(connected && totalRead < totalSize) {
+					if((in = recv(socket, stream->getInputBuffer() + totalRead, totalSize - totalRead, 0)) != SOCKET_ERROR) { //Fully read
 						totalRead += in;
 					} else {
 						break;
 					}
 				}
-				if (in == SOCKET_ERROR)
+				if(in == SOCKET_ERROR)
 					break;
-				if (totalRead == totalSize) {
-					while (connected && totalRead > stream->getReadIndex().getPosition()) { //Process packets until all packets in the chunk of data are consumed.
+				if(totalRead == totalSize) {
+					while(connected && totalRead > stream->getReadIndex().getPosition()) { //Process packets until all packets in the chunk of data are consumed.
 						*stream >> packetId;
-						switch (packetId) {
-						case HANDSHAKE_PACKET_ID:
+						switch(packetId) {
+							case HANDSHAKE_PACKET_ID:
 							{
 								string versionCode = "";
 								*stream >> versionCode;
-								if (versionCode != VERSION_CODE) {
+								if(versionCode != VERSION_CODE) {
 									throw PacketException("Server had invalid version code: " + versionCode);
 								}
 								//cout << endl << "Received handshake version: " << versionCode << endl; //TODO: REMOVE
 								user->doCredentials();
 								break;
 							}
-						case AUTHENTICATION_PACKET_ID:
+							case AUTHENTICATION_PACKET_ID:
 							{
 								unsigned short returnCode = AUTHENTICATION_FAILURE;
 								*stream >> returnCode;
-								switch (returnCode) {
-								case AUTHENTICATION_INVALID_PASSWORD:
-									user->getConsoleRenderer()->pushBodyMessage("You've entered an invalid password.", ERROR_COLOR);
-									user->doCredentials(true);
-									break;
-								case AUTHENTICATION_NAME_IN_USE:
-									user->getConsoleRenderer()->pushBodyMessage("That username is already in use.", ERROR_COLOR);
-									user->doCredentials();
-									break;
-								case AUTHENTICATION_INVALID_USERNAME:
-									user->getConsoleRenderer()->pushBodyMessage("Please enter a valid username using letters (a-z) and numbers only (0-9).", ERROR_COLOR);
-									user->doCredentials();
-									break;
-								case AUTHENTICATION_SUCCESS:
-									user->gotoLobby();
-									break;
-								default:
-								case AUTHENTICATION_FAILURE:
-									user->getConsoleRenderer()->pushBodyMessage("The server could not process your authentication.", ERROR_COLOR);
-									user->disconnect();
-									return;
+								switch(returnCode) {
+									case AUTHENTICATION_INVALID_PASSWORD:
+										user->getConsoleRenderer()->pushBodyMessage("You've entered an invalid password.", ERROR_COLOR);
+										user->doCredentials(true);
+										break;
+									case AUTHENTICATION_NAME_IN_USE:
+										user->getConsoleRenderer()->pushBodyMessage("That username is already in use.", ERROR_COLOR);
+										user->doCredentials();
+										break;
+									case AUTHENTICATION_INVALID_USERNAME:
+										user->getConsoleRenderer()->pushBodyMessage("Please enter a valid username using letters (a-z) and numbers only (0-9).", ERROR_COLOR);
+										user->doCredentials();
+										break;
+									case AUTHENTICATION_SUCCESS:
+										user->gotoLobby();
+										break;
+									default:
+									case AUTHENTICATION_FAILURE:
+										user->getConsoleRenderer()->pushBodyMessage("The server could not process your authentication.", ERROR_COLOR);
+										user->disconnect();
+										return;
 								}
 								break;
 							}
-						case MESSAGE_PACKET_ID:
+							case MESSAGE_PACKET_ID:
 							{
 								string message = "";
 								*stream >> message;
 								user->getConsoleRenderer()->pushBodyMessage(message);
 								break;
 							}
-						case ATTEMPT_JOIN_ROOM_PACKET_ID:
+							case ATTEMPT_JOIN_ROOM_PACKET_ID:
 							{
 								unsigned short joinRoomStatusCode = 0;
 								*stream >> joinRoomStatusCode;
-								if (joinRoomStatusCode == ATTEMPT_JOIN_ROOM_SUCCESS) {
+								if(joinRoomStatusCode == ATTEMPT_JOIN_ROOM_SUCCESS) {
 									user->setInRoom(true);
 								} else {
 									user->getConsoleRenderer()->pushBodyMessage("Could not join room.", ERROR_COLOR);
 								}
 								break;
 							}
-						case LEAVE_ROOM_PACKET_ID:
+							case LEAVE_ROOM_PACKET_ID:
 							{
 								user->setInRoom(false);
 								break;
 							}
-						case ROOM_STATUS_UPDATE_PACKET_ID:
+							case ROOM_STATUS_UPDATE_PACKET_ID:
 							{
 								unsigned short roomCount = 0;
 								*stream >> roomCount;
-								string * roomNames = new string[roomCount];
-								unsigned short * roomColors = new unsigned short[roomCount];
+								string* roomNames = new string[roomCount];
+								unsigned short* roomColors = new unsigned short[roomCount];
 								//cout << "Room list update (" << roomCount << "):";
-								for (unsigned short i = 0; i < roomCount; i++) {
+								for(unsigned short i = 0; i < roomCount; i++) {
 									string roomName = "";
 									*stream >> roomName;
 									//cout << " " << roomName;
@@ -141,15 +140,15 @@ void PacketHandler::readLoop() {
 								//cout << endl;
 								break;
 							}
-						case UPDATE_ROOM_LIST_PACKET_ID:
+							case UPDATE_ROOM_LIST_PACKET_ID:
 							{
 
 								unsigned short userCount = 0;
 								*stream >> userCount;
-								string * userRoomList = new string[userCount];
-								unsigned short * userRoomColors = new unsigned short[userCount];
+								string* userRoomList = new string[userCount];
+								unsigned short* userRoomColors = new unsigned short[userCount];
 								//cout << "User list update (" << userCount << "):";
-								for (unsigned short i = 0; i < userCount; i++) {
+								for(unsigned short i = 0; i < userCount; i++) {
 									unsigned short usernameColor = 0;
 									string userName = "";
 									*stream >> usernameColor;
@@ -158,77 +157,77 @@ void PacketHandler::readLoop() {
 									userRoomList[i] = userName;
 									userRoomColors[i] = usernameColor;
 								}
-								if (user->isInRoom())
+								if(user->isInRoom())
 									user->getConsoleRenderer()->updateTopRight(userRoomList, userRoomColors, userCount);
 								delete[] userRoomList;
 								delete[] userRoomColors;
 								//cout << endl;
 								break;
 							}
-						case SERVER_MESSAGE_PACKET_ID:
+							case SERVER_MESSAGE_PACKET_ID:
 							{
 								string message = "";
 								*stream >> message;
 								user->getConsoleRenderer()->pushBodyMessage(message);
 								break;
 							}
-						case ADD_FRIEND_PACKET_ID:
+							case ADD_FRIEND_PACKET_ID:
 							{
-							string name = "";
-							bool isOnline = false;
-							*stream >> name;
-							*stream >> isOnline;
-							for (unsigned short i = 0; i < user->getFriendsListSize(); i++) {
-								if (user->getFriendsList()[i] == nullptr) {
-									user->getFriendsList()[i] = new Friend(name, isOnline);
-									user->getConsoleRenderer()->updateBottomRight(user->getFriendsList(), user->getFriendsListSize());
-									break;
+								string name = "";
+								bool isOnline = false;
+								*stream >> name;
+								*stream >> isOnline;
+								for(unsigned short i = 0; i < user->getFriendsListSize(); i++) {
+									if(user->getFriendsList()[i] == nullptr) {
+										user->getFriendsList()[i] = new Friend(name, isOnline);
+										user->getConsoleRenderer()->updateBottomRight(user->getFriendsList(), user->getFriendsListSize());
+										break;
+									}
 								}
+								break;
 							}
-							break;
-							}
-						case REMOVE_FRIEND_PACKET_ID:
-						{
-							string name = "";
-							*stream >> name;
-							transform(name.begin(), name.end(), name.begin(), ::tolower);
-							for (unsigned short i = 0; i < user->getFriendsListSize(); i++) {
-								if (user->getFriendsList()[i] != nullptr && user->getFriendsList()[i]->getLowercaseName() == name) {
-									delete user->getFriendsList()[i];
-									user->getFriendsList()[i] = nullptr;
-									user->getConsoleRenderer()->updateBottomRight(user->getFriendsList(), user->getFriendsListSize());
-									break;
-								}
-							}
-							break;
-						}
-						case FRIEND_STATUS_PACKET_ID:
-						{
-							string name = "";
-							bool isOnline = false;
-							*stream >> name;
-							*stream >> isOnline;
-							transform(name.begin(), name.end(), name.begin(), ::tolower);
-							for (unsigned short i = 0; i < user->getFriendsListSize(); i++) {
-								if (user->getFriendsList()[i] != nullptr && user->getFriendsList()[i]->getLowercaseName() == name) {
-									user->getFriendsList()[i]->setOnline(isOnline);
-									user->getConsoleRenderer()->updateBottomRight(user->getFriendsList(), user->getFriendsListSize());
-									break;
-								}
-							}
-							break;
-						}
-						case FRIENDS_LIST_PACKET_ID:
+							case REMOVE_FRIEND_PACKET_ID:
 							{
-								for (unsigned short i = 0; i < user->getFriendsListSize(); i++) {
+								string name = "";
+								*stream >> name;
+								transform(name.begin(), name.end(), name.begin(), ::tolower);
+								for(unsigned short i = 0; i < user->getFriendsListSize(); i++) {
+									if(user->getFriendsList()[i] != nullptr && user->getFriendsList()[i]->getLowercaseName() == name) {
+										delete user->getFriendsList()[i];
+										user->getFriendsList()[i] = nullptr;
+										user->getConsoleRenderer()->updateBottomRight(user->getFriendsList(), user->getFriendsListSize());
+										break;
+									}
+								}
+								break;
+							}
+							case FRIEND_STATUS_PACKET_ID:
+							{
+								string name = "";
+								bool isOnline = false;
+								*stream >> name;
+								*stream >> isOnline;
+								transform(name.begin(), name.end(), name.begin(), ::tolower);
+								for(unsigned short i = 0; i < user->getFriendsListSize(); i++) {
+									if(user->getFriendsList()[i] != nullptr && user->getFriendsList()[i]->getLowercaseName() == name) {
+										user->getFriendsList()[i]->setOnline(isOnline);
+										user->getConsoleRenderer()->updateBottomRight(user->getFriendsList(), user->getFriendsListSize());
+										break;
+									}
+								}
+								break;
+							}
+							case FRIENDS_LIST_PACKET_ID:
+							{
+								for(unsigned short i = 0; i < user->getFriendsListSize(); i++) {
 									delete user->getFriendsList()[i];
 								}
 								delete[] user->getFriendsList();
 
 								unsigned short friendCount = 0;
 								*stream >> friendCount;
-								Friend ** friendsList = new Friend*[friendCount];
-								for (unsigned short i = 0; i < friendCount; i++) {
+								Friend** friendsList = new Friend * [friendCount];
+								for(unsigned short i = 0; i < friendCount; i++) {
 									string name = "";
 									bool isOnline = false;
 									*stream >> name;
@@ -239,8 +238,8 @@ void PacketHandler::readLoop() {
 								user->setFriendsList(friendCount, friendsList);
 								break;
 							}
-						default:
-							throw PacketException("Invalid packet id " + to_string(packetId));
+							default:
+								throw PacketException("Invalid packet id " + to_string(packetId));
 						}
 					}
 					totalRead = 0;
@@ -251,15 +250,15 @@ void PacketHandler::readLoop() {
 				}
 				peeker->resetRead();
 			}
-			if (in == SOCKET_ERROR) { //Possibly lost connection.
+			if(in == SOCKET_ERROR) { //Possibly lost connection.
 				break;
 			}
 		}
-	} catch (PacketException & e) {
+	} catch(PacketException& e) {
 		//cerr << "Read loop error: " << e.what() << endl;
 		user->getConsoleRenderer()->pushBodyMessage("Read loop error: ", ERROR_COLOR);
 		user->getConsoleRenderer()->pushBodyMessage(e.what(), ERROR_COLOR);
-	} catch (exception & e) {
+	} catch(exception& e) {
 		//cerr << "Read loop big error: " << e.what() << endl;
 		user->getConsoleRenderer()->pushBodyMessage("Read loop big error: ", ERROR_COLOR);
 		user->getConsoleRenderer()->pushBodyMessage(e.what(), ERROR_COLOR);
@@ -270,19 +269,19 @@ void PacketHandler::readLoop() {
 /* Makes a new packet and returns it for modification.
 	This also locks a mutex to prevent sending data in flush() until it's finished.
 */
-Packet * PacketHandler::constructPacket(unsigned short id) {
+Packet* PacketHandler::constructPacket(unsigned short id) {
 	mtx.lock();
 	constructingPacket = new Packet(stream, id);
 	return constructingPacket;
 }
 
 /* Finializes the packet by unlocking the mutex to let flush send the fully constructed packet. */
-void PacketHandler::finializePacket(Packet * packet, bool _flush) {
-	if (packet != constructingPacket)
+void PacketHandler::finializePacket(Packet* packet, bool _flush) {
+	if(packet != constructingPacket)
 		throw runtime_error("Finialized packet wasn't the original.");
 	constructingPacket = nullptr;
 	delete packet;
-	if (_flush)
+	if(_flush)
 		flush(true);
 	mtx.unlock();
 }
@@ -299,37 +298,37 @@ void PacketHandler::flush(bool self) {
 	unsigned short desiredSize = stream->getWriteIndex().getPosition();
 	*peeker << desiredSize;
 	unsigned short totalSize = peeker->getWriteIndex().getPosition();
-	while (totalSent < totalSize) {
+	while(totalSent < totalSize) {
 		int sent = send(socket, peeker->getOutputBuffer() + totalSent, totalSize - totalSent, 0);
-		if (sent == SOCKET_ERROR) { //Possibly lost connection.
+		if(sent == SOCKET_ERROR) { //Possibly lost connection.
 			user->disconnect();
-			if (!self)
+			if(!self)
 				mtx.unlock();
 			return;
 		}
 		totalSent += sent;
 	}
-	if (totalSent > totalSize) {
+	if(totalSent > totalSize) {
 		throw exception("Peeker sent more than total size.");
 	}
 	totalSent = 0;
 	totalSize = desiredSize;
-	while (totalSent < totalSize) {
+	while(totalSent < totalSize) {
 		int sent = send(socket, stream->getOutputBuffer() + totalSent, totalSize - totalSent, 0);
-		if (sent == SOCKET_ERROR) { //Possibly lost connection.
+		if(sent == SOCKET_ERROR) { //Possibly lost connection.
 			user->disconnect();
-			if (!self)
+			if(!self)
 				mtx.unlock();
 			return;
 		}
 		totalSent += sent;
 	}
-	if (totalSent > totalSize) {
+	if(totalSent > totalSize) {
 		throw exception("Stream sent more than total size.");
 	}
 	peeker->resetWrite();
 	stream->resetWrite();
-	if (!self)
+	if(!self)
 		mtx.unlock();
 }
 
@@ -341,7 +340,7 @@ void PacketHandler::setConnected(bool connected) {
 PacketHandler::~PacketHandler() {
 	delete peeker;
 	delete stream;
-	if (socket != INVALID_SOCKET) {
+	if(socket != INVALID_SOCKET) {
 		closesocket(socket);
 		socket = INVALID_SOCKET;
 	}

@@ -11,7 +11,7 @@ Cursor::Cursor(unsigned short size) : size(size), position(0) {
 	Throws an exception if the cursor becomes beyond the size specified.
 */
 unsigned short Cursor::operator++(int) {
-	if (position + 1 >= size) {
+	if(position + 1 >= size) {
 		throw exception("Cursor OOB");
 	}
 	return position++;
@@ -22,7 +22,7 @@ unsigned short Cursor::operator++(int) {
 */
 unsigned short Cursor::operator+=(int amount) {
 	position += amount;
-	if (position >= size) {
+	if(position >= size) {
 		throw exception("Cursor OOB");
 	}
 	return position;
@@ -33,7 +33,7 @@ unsigned short Cursor::operator+=(int amount) {
 	Throws an exception if the cursor becomes lower than 0.
 */
 unsigned short Cursor::operator--(int) {
-	if (position == 0) {
+	if(position == 0) {
 		throw exception("Cursor OOB");
 	}
 	return position--;
@@ -44,7 +44,7 @@ unsigned short Cursor::operator--(int) {
 */
 unsigned short Cursor::operator-=(int amount) {
 	int test = (int)position - amount;
-	if (test < 0) {
+	if(test < 0) {
 		throw exception("Cursor OOB");
 	}
 	position -= amount;
@@ -96,7 +96,7 @@ Cursor& DataStream::getReadIndex() {
 /* Resets the write cursor and output buffer. */
 void DataStream::resetWrite() {
 	writeIndex.reset();
-	for (unsigned short i = 0; i < size; i++) {
+	for(unsigned short i = 0; i < size; i++) {
 		outBuf[i] = '\0';
 	}
 }
@@ -104,7 +104,7 @@ void DataStream::resetWrite() {
 /* Resets the read cursor and input buffer. */
 void DataStream::resetRead() {
 	readIndex.reset();
-	for (unsigned short i = 0; i < size; i++) {
+	for(unsigned short i = 0; i < size; i++) {
 		inBuf[i] = '\0';
 	}
 }

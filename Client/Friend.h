@@ -1,8 +1,7 @@
 #ifndef FRIEND_H_
 #define FRIEND_H_
 #include <string>
-class Friend
-{
+class Friend {
 public:
 	Friend(std::string name, bool online);
 	std::string getName();

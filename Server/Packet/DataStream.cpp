@@ -11,7 +11,7 @@ Cursor::Cursor(unsigned short size) : size(size), position(0) {
 	Throws an exception if the cursor becomes beyond the size specified.
 */
 unsigned short Cursor::operator++(int) {
-	if (position + 1 >= size) {
+	if(position + 1 >= size) {
 		throw exception("Cursor OOB");
 	}
 	return position++;
@@ -22,7 +22,7 @@ unsigned short Cursor::operator++(int) {
 */
 unsigned short Cursor::operator+=(int amount) {
 	position += amount;
-	if (position >= size) {
+	if(position >= size) {
 		throw exception("Cursor OOB");
 	}
 	return position;
@@ -33,7 +33,7 @@ unsigned short Cursor::operator+=(int amount) {
 	Throws an exception if the cursor becomes lower than 0.
 */
 unsigned short Cursor::operator--(int) {
-	if (position == 0) {
+	if(position == 0) {
 		throw exception("Cursor OOB");
 	}
 	return position--;
@@ -44,7 +44,7 @@ unsigned short Cursor::operator--(int) {
 */
 unsigned short Cursor::operator-=(int amount) {
 	int test = (int)position - amount;
-	if (test < 0) {
+	if(test < 0) {
 		throw exception("Cursor OOB");
 	}
 	position -= amount;
@@ -69,12 +69,12 @@ DataStream::DataStream(unsigned short size) : size(size), readIndex(size), write
 }
 
 /* Returns the input buffer. */
-char * DataStream::getInputBuffer() {
+char* DataStream::getInputBuffer() {
 	return inBuf;
 }
 
 /* Returns the output buffer. */
-char * DataStream::getOutputBuffer() {
+char* DataStream::getOutputBuffer() {
 	return outBuf;
 }
 
@@ -84,19 +84,19 @@ unsigned short DataStream::getSize() {
 }
 
 /* Returns the cursor for writing. */
-Cursor & DataStream::getWriteIndex() {
+Cursor& DataStream::getWriteIndex() {
 	return writeIndex;
 }
 
 /* Returns the cursor for reading. */
-Cursor & DataStream::getReadIndex() {
+Cursor& DataStream::getReadIndex() {
 	return readIndex;
 }
 
 /* Resets the write cursor and output buffer. */
 void DataStream::resetWrite() {
 	writeIndex.reset();
-	for (unsigned short i = 0; i < size; i++) {
+	for(unsigned short i = 0; i < size; i++) {
 		outBuf[i] = '\0';
 	}
 }
@@ -104,7 +104,7 @@ void DataStream::resetWrite() {
 /* Resets the read cursor and input buffer. */
 void DataStream::resetRead() {
 	readIndex.reset();
-	for (unsigned short i = 0; i < size; i++) {
+	for(unsigned short i = 0; i < size; i++) {
 		inBuf[i] = '\0';
 	}
 }
@@ -150,9 +150,9 @@ DataStream& operator>>(DataStream& dataStream, unsigned short& toRead) {
 }
 
 /* First writes the size of the string to the output stream and then the string itself. */
-DataStream & operator<<(DataStream & dataStream, const string & toWrite) {
+DataStream& operator<<(DataStream& dataStream, const string& toWrite) {
 	dataStream << (unsigned short)toWrite.size();
-	Cursor & idx = dataStream.getWriteIndex();
+	Cursor& idx = dataStream.getWriteIndex();
 	int curIdx = idx.getPosition();
 	idx += (int)toWrite.size();
 	memcpy(dataStream.getOutputBuffer() + curIdx, toWrite.c_str(), toWrite.size());
@@ -160,18 +160,18 @@ DataStream & operator<<(DataStream & dataStream, const string & toWrite) {
 }
 
 /* Converts a char array into a string and then writes it via the string implementation. */
-DataStream& operator<<(DataStream& dataStream, const char * toWrite) {
+DataStream& operator<<(DataStream& dataStream, const char* toWrite) {
 	return (dataStream << string(toWrite));
 }
 
 /* First reads the size of the string from the input stream and then the string itself. */
-DataStream & operator>>(DataStream & dataStream, string & toRead) {
-	Cursor & idx = dataStream.getReadIndex();
+DataStream& operator>>(DataStream& dataStream, string& toRead) {
+	Cursor& idx = dataStream.getReadIndex();
 	unsigned short stringLength = 0;
 	dataStream >> stringLength;
 	int curIdx = idx.getPosition();
 	idx += stringLength;
-	char * tempArray = new char[stringLength + 1];
+	char* tempArray = new char[stringLength + 1];
 	tempArray[stringLength] = '\0';
 	memcpy(tempArray, dataStream.getInputBuffer() + curIdx, stringLength);
 	toRead.append(tempArray);

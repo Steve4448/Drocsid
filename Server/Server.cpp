@@ -14,9 +14,9 @@ using namespace std;
 
 /* Entry point for the server, takes in the port to run at and constructs and begins running the server. */
 int main() {
-	if (!CreateDirectoryA(string(SAVE_DIRECTORY).c_str(), NULL)) {
+	if(!CreateDirectoryA(string(SAVE_DIRECTORY).c_str(), NULL)) {
 		DWORD lastError = GetLastError();
-		if (lastError != ERROR_ALREADY_EXISTS) {
+		if(lastError != ERROR_ALREADY_EXISTS) {
 			cout << "Error #" << lastError << " making the save directory: " << SAVE_DIRECTORY << endl;
 			return 1;
 		}
@@ -26,22 +26,20 @@ int main() {
 	string port = "";
 	cout << "Welcome to Drocsid." << endl << endl;
 	cout << "Please enter the port that the server will be hosted at: ";
-	while (portNum == 0) {
+	while(portNum == 0) {
 		try {
 			cin >> port;
 			portNum = stoi(port);
 			cin.ignore();
-		}
-		catch (invalid_argument &) {
+		} catch(invalid_argument&) {
 			cout << "Please enter a valid port number: ";
 		}
 	}
 	Server server(portNum);
 	try {
-		if (server.start())
+		if(server.start())
 			server.doListen();
-	}
-	catch (StartupException & e) {
+	} catch(StartupException& e) {
 		cerr << "Error starting the server: " << e.what() << endl;
 	}
 	return 0;
@@ -49,14 +47,14 @@ int main() {
 
 Server::Server(unsigned int port) :
 	port(port),
-	userList{ nullptr },
-	roomList{ nullptr },
+	userList{nullptr},
+	roomList{nullptr},
 	sSocket(INVALID_SOCKET),
 	listening(true),
 	roomCount(0),
 	allowedUsernameChars("^[a-zA-Z0-9]*$") {
 	logFile.open(LOG_DIRECTORY + (string)"log.txt", ofstream::app);
-	if (!logFile.is_open()) {
+	if(!logFile.is_open()) {
 		throw exception("Could not open log file.");
 	}
 }
@@ -68,11 +66,11 @@ bool Server::start() {
 	cout << "Server starting." << endl;
 	WSADATA wsaData;
 	struct addrinfo socketSpecifications;
-	struct addrinfo * socketResult = nullptr;
+	struct addrinfo* socketResult = nullptr;
 	int wsaResult;
 
 	wsaResult = WSAStartup(DESIRED_WINSOCK_VERSION, &wsaData);
-	if (wsaResult != 0) {
+	if(wsaResult != 0) {
 		throw StartupException("WSAStartup failed: ", wsaResult);
 	}
 
@@ -83,23 +81,23 @@ bool Server::start() {
 	socketSpecifications.ai_flags = AI_PASSIVE;
 
 	wsaResult = getaddrinfo(NULL, to_string(port).c_str(), &socketSpecifications, &socketResult);
-	if (wsaResult != 0) {
+	if(wsaResult != 0) {
 		throw StartupException("getaddrinfo failed with error: ", wsaResult);
 	}
 
 	sSocket = socket(socketResult->ai_family, socketResult->ai_socktype, socketResult->ai_protocol);
-	if (sSocket == INVALID_SOCKET) {
+	if(sSocket == INVALID_SOCKET) {
 		throw StartupException("socket failed with error: ", WSAGetLastError());
 	}
 
 	wsaResult = ::bind(sSocket, socketResult->ai_addr, (int)socketResult->ai_addrlen);
 	freeaddrinfo(socketResult);
-	if (wsaResult == SOCKET_ERROR) {
+	if(wsaResult == SOCKET_ERROR) {
 		throw StartupException("bind failed with error: ", WSAGetLastError());
 	}
 
 	wsaResult = listen(sSocket, SOMAXCONN);
-	if (wsaResult == SOCKET_ERROR) {
+	if(wsaResult == SOCKET_ERROR) {
 		throw StartupException("bind failed with error: ", WSAGetLastError());
 	}
 	cout << "Server now listening." << endl;
@@ -108,35 +106,35 @@ bool Server::start() {
 
 /* Listens for connections and upon a connection constructs a user. */
 void Server::doListen() {
-	mainLoop: while (listening) {
-		SOCKET userSocket = accept(sSocket, NULL, NULL);
-		if (userSocket == INVALID_SOCKET) {
-			cerr << "accept failed with error: " << WSAGetLastError();
-			continue;
-		}
-
-		for (unsigned short i = 0; i < MAX_USERS; i++) {
-			if (userList[i] == nullptr) {
-				userList[i] = new User(this, i, userSocket);
-				goto mainLoop;
-			}
-		}
-		cerr << "User attempted a connection but the server is full." << endl;
-		closesocket(userSocket);
+mainLoop: while(listening) {
+	SOCKET userSocket = accept(sSocket, NULL, NULL);
+	if(userSocket == INVALID_SOCKET) {
+		cerr << "accept failed with error: " << WSAGetLastError();
+		continue;
 	}
+
+	for(unsigned short i = 0; i < MAX_USERS; i++) {
+		if(userList[i] == nullptr) {
+			userList[i] = new User(this, i, userSocket);
+			goto mainLoop;
+		}
+	}
+	cerr << "User attempted a connection but the server is full." << endl;
+	closesocket(userSocket);
+}
 }
 
 /* Returns the servers room list array. */
-Room ** Server::getRoomList() {
+Room** Server::getRoomList() {
 	return roomList;
 }
 
 /* Attempts to make a room
 - Returns nullptr if there is no room spaces left.
 - Returns address of room if a room was successfully made. */
-Room * Server::makeRoom(User * owner, string roomName) {
-	for (unsigned short i = 0; i < MAX_ROOMS; i++) {
-		if (roomList[i] == nullptr) {
+Room* Server::makeRoom(User* owner, string roomName) {
+	for(unsigned short i = 0; i < MAX_ROOMS; i++) {
+		if(roomList[i] == nullptr) {
 			roomCount++;
 			log(owner->getUsername() + " created room " + roomName + ".");
 			return (roomList[i] = new Room(this, owner, roomName));
@@ -146,9 +144,9 @@ Room * Server::makeRoom(User * owner, string roomName) {
 }
 
 /* Destroys the room, first ensures everyone has left it. */
-void Server::destroyRoom(Room * room) {
-	for (unsigned short i = 0; i < MAX_ROOMS; i++) {
-		if (roomList[i] == room) {
+void Server::destroyRoom(Room* room) {
+	for(unsigned short i = 0; i < MAX_ROOMS; i++) {
+		if(roomList[i] == room) {
 			log("Room " + room->getName() + " destroyed.");
 			roomList[i]->ensureEmpty();
 			delete roomList[i];
@@ -162,19 +160,19 @@ void Server::destroyRoom(Room * room) {
 
 /* Sends a room list update to everyone connected. */
 void Server::updateRoomList() {
-	for (unsigned short i = 0; i < MAX_USERS; i++) {
-		if (userList[i] == nullptr)
+	for(unsigned short i = 0; i < MAX_USERS; i++) {
+		if(userList[i] == nullptr)
 			continue;
 		updateRoomList(userList[i]);
 	}
 }
 
 /* Sends a room list update to a specific user. */
-void Server::updateRoomList(User * user) {
-	Packet * p = user->getPacketHandler()->constructPacket(ROOM_STATUS_UPDATE_PACKET_ID);
+void Server::updateRoomList(User* user) {
+	Packet* p = user->getPacketHandler()->constructPacket(ROOM_STATUS_UPDATE_PACKET_ID);
 	*p << roomCount;
-	for (unsigned short i2 = 0; i2 < MAX_ROOMS; i2++) {
-		if (roomList[i2] == nullptr)
+	for(unsigned short i2 = 0; i2 < MAX_ROOMS; i2++) {
+		if(roomList[i2] == nullptr)
 			continue;
 		*p << roomList[i2]->getName();
 	}
@@ -182,28 +180,28 @@ void Server::updateRoomList(User * user) {
 }
 
 /* Removes the user from the user list and deletes them. */
-void Server::removeUser(User * user) {
+void Server::removeUser(User* user) {
 	log((user->getUsername().empty() ? user->getIp() : user->getUsername()) + " disconnected.");
 	userList[user->getUserId()] = nullptr;
 	delete user;
 }
 
 /* Returns the user list array. */
-User ** Server::getUserList() {
+User** Server::getUserList() {
 	return userList;
 }
 
 /* Finds the user in the user list by the specified name.
 - Returns nullptr if no one was found by that name.
 - Returns the user pointer if the name was found. */
-User * Server::getUserByName(string name) {
-	if (name.empty())
+User* Server::getUserByName(string name) {
+	if(name.empty())
 		return nullptr;
 	transform(name.begin(), name.end(), name.begin(), ::tolower);
-	for (unsigned short i = 0; i < MAX_USERS; i++) {
-		if (userList[i] == nullptr)
+	for(unsigned short i = 0; i < MAX_USERS; i++) {
+		if(userList[i] == nullptr)
 			continue;
-		if (userList[i]->isAuthenticated() && userList[i]->getUsernameLowercase() == name)
+		if(userList[i]->isAuthenticated() && userList[i]->getUsernameLowercase() == name)
 			return userList[i];
 	}
 	return nullptr;
@@ -217,7 +215,7 @@ bool Server::isValidUsername(string username) {
 
 /* Sees if the user is registered. */
 bool Server::doesRegisteredUsernameExist(string username) {
-	if (!isValidUsername(username))
+	if(!isValidUsername(username))
 		return false;
 	transform(username.begin(), username.end(), username.begin(), ::tolower);
 	ifstream saveFile;
@@ -234,14 +232,14 @@ void Server::log(string line) {
 }
 
 Server::~Server() {
-	if (sSocket != INVALID_SOCKET) {
+	if(sSocket != INVALID_SOCKET) {
 		closesocket(sSocket);
 	}
 	WSACleanup();
-	for (unsigned short i = 0; i < MAX_USERS; i++) {
+	for(unsigned short i = 0; i < MAX_USERS; i++) {
 		delete userList[i];
 	}
-	for (unsigned short i = 0; i < MAX_ROOMS; i++) {
+	for(unsigned short i = 0; i < MAX_ROOMS; i++) {
 		delete roomList[i];
 	}
 }

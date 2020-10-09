@@ -4,8 +4,7 @@
 #include "DataStream.h"
 #include <string>
 
-class Packet
-{
+class Packet {
 	friend class PacketHandler;
 public:
 	~Packet();

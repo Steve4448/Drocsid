@@ -8,20 +8,20 @@ class ChatClient;
 
 class PacketHandler {
 public:
-	PacketHandler(ChatClient * const clientInstance, SOCKET socket);
+	PacketHandler(ChatClient* const clientInstance, SOCKET socket);
 	~PacketHandler();
 	void readLoop();
 	void setConnected(bool connected);
-	Packet * constructPacket(unsigned short);
-	void finializePacket(Packet * packet, bool _flush = false);
+	Packet* constructPacket(unsigned short);
+	void finializePacket(Packet* packet, bool _flush = false);
 	void flush(bool self = false);
 private:
 	SOCKET socket;
-	ChatClient * const user;
+	ChatClient* const user;
 	bool connected;
-	DataStream * stream;
-	DataStream * peeker;
+	DataStream* stream;
+	DataStream* peeker;
 	std::mutex mtx;
-	Packet * constructingPacket;
+	Packet* constructingPacket;
 };
 #endif //PACKET_HANDLER_H_

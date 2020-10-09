@@ -6,13 +6,12 @@
 class Server;
 class Room;
 
-class User
-{
+class User {
 public:
-	User(Server * server, unsigned short userId, SOCKET socket);
+	User(Server* server, unsigned short userId, SOCKET socket);
 	~User();
-	Room * getRoom() const;
-	void setRoom(Room * room);
+	Room* getRoom() const;
+	void setRoom(Room* room);
 	std::string getUsername() const;
 	void setUsername(std::string username);
 	std::string getUsernameLowercase() const;
@@ -30,23 +29,23 @@ public:
 	unsigned short load(std::string username);
 	void save();
 	void disconnect();
-	void sendMessage(User * const from, std::string message, bool personalMessage);
+	void sendMessage(User* const from, std::string message, bool personalMessage);
 	bool isFriend(std::string name);
 	bool addFriend(std::string name);
 	bool removeFriend(std::string name);
 	void updateFriendStatus(std::string name, bool online);
 	void sendFriendsList();
 	std::string getIp();
-	std::string * getFriends();
-	PacketHandler * getPacketHandler();
+	std::string* getFriends();
+	PacketHandler* getPacketHandler();
 	void sendServerMessage(std::string message, unsigned short messageColor = ERROR_COLOR);
 private:
-	Server * server;
-	Room * room;
+	Server* server;
+	Room* room;
 	unsigned short userId;
 	unsigned short userNameColor;
 	unsigned short userChatColor;
-	PacketHandler * packetHandler;
+	PacketHandler* packetHandler;
 	std::thread readThreadInstance;
 	std::thread writeThreadInstance;
 	std::string username;

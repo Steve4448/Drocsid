@@ -8,7 +8,7 @@
 
 using namespace std;
 
-User::User(Server * server, unsigned short userId, SOCKET socket) :
+User::User(Server* server, unsigned short userId, SOCKET socket) :
 	server(server),
 	room(nullptr),
 	userId(userId),
@@ -23,14 +23,14 @@ User::User(Server * server, unsigned short userId, SOCKET socket) :
 	packetHandler(new PacketHandler(server, this, socket)) {
 	sockaddr_in socketAddr;
 	int addrLen = sizeof(socketAddr);
-	if (getsockname(socket, (LPSOCKADDR)&socketAddr, &addrLen) == SOCKET_ERROR) {
+	if(getsockname(socket, (LPSOCKADDR)&socketAddr, &addrLen) == SOCKET_ERROR) {
 		cerr << "getsockname failed with: " << WSAGetLastError();
 		ip = "error";
 	} else {
 		ip.resize(addrLen);
-		inet_ntop(AF_INET, &socketAddr.sin_addr, const_cast<char *>(ip.c_str()), addrLen);
+		inet_ntop(AF_INET, &socketAddr.sin_addr, const_cast<char*>(ip.c_str()), addrLen);
 		size_t firstSpace = ip.find('\0');
-		if (firstSpace != string::npos) {
+		if(firstSpace != string::npos) {
 			ip = ip.substr(0, firstSpace);
 		}
 	}
@@ -116,26 +116,26 @@ unsigned short User::getUserChatColor() const {
 }
 
 /* Return the packet handler instance. */
-PacketHandler * User::getPacketHandler() {
+PacketHandler* User::getPacketHandler() {
 	return packetHandler;
 }
 
 /* Return the room the user is inside (nullptr if not in one)*/
-Room * User::getRoom() const {
+Room* User::getRoom() const {
 	return room;
 }
 
 /* Set the room the user is inside. */
-void User::setRoom(Room * room) {
+void User::setRoom(Room* room) {
 	this->room = room;
 }
 
 /* Returns true if the name is on the user's friends list, otherwise false. */
 bool User::isFriend(std::string name) {
-	for (int i = 0; i < MAX_FRIENDS; i++) {
-		if (friendsList[i].empty())
+	for(int i = 0; i < MAX_FRIENDS; i++) {
+		if(friendsList[i].empty())
 			continue;
-		if (name == friendsList[i])
+		if(name == friendsList[i])
 			return true;
 	}
 	return false;
@@ -146,8 +146,8 @@ bool User::isFriend(std::string name) {
 	- Returns false if the friends list was full.
 */
 bool User::addFriend(std::string name) {
-	for (int i = 0; i < MAX_FRIENDS; i++) {
-		if (friendsList[i].empty()) {
+	for(int i = 0; i < MAX_FRIENDS; i++) {
+		if(friendsList[i].empty()) {
 			friendsList[i] = name;
 			Packet* p = packetHandler->constructPacket(ADD_FRIEND_PACKET_ID);
 			User* friendUser = server->getUserByName(friendsList[i]);
@@ -168,13 +168,13 @@ bool User::addFriend(std::string name) {
 	- Returns true if the friend was removed from their list.  (Also updates the room list incase their friend is inside)
 */
 bool User::removeFriend(std::string name) {
-	for (int i = 0; i < MAX_FRIENDS; i++) {
-		if (!friendsList[i].empty() && friendsList[i] == name) {
+	for(int i = 0; i < MAX_FRIENDS; i++) {
+		if(!friendsList[i].empty() && friendsList[i] == name) {
 			friendsList[i] = "";
 			Packet* p = packetHandler->constructPacket(REMOVE_FRIEND_PACKET_ID);
 			*p << name;
 			packetHandler->finializePacket(p);
-			if (getRoom() != nullptr)
+			if(getRoom() != nullptr)
 				getRoom()->updateRoomList(this);
 			save();
 			return true;
@@ -193,8 +193,8 @@ void User::updateFriendStatus(std::string name, bool online) {
 void User::sendFriendsList() {
 	Packet* p = packetHandler->constructPacket(FRIENDS_LIST_PACKET_ID);
 	*p << (unsigned short)MAX_FRIENDS;
-	for (int i = 0; i < MAX_FRIENDS; i++) {
-		if (!friendsList[i].empty()) {
+	for(int i = 0; i < MAX_FRIENDS; i++) {
+		if(!friendsList[i].empty()) {
 			User* friendUser = server->getUserByName(friendsList[i]);
 			*p << friendsList[i];
 			*p << (friendUser != nullptr && friendUser->getPacketHandler()->isConnected() ? true : false);
@@ -207,7 +207,7 @@ void User::sendFriendsList() {
 }
 
 /* Return the user's friends list. */
-string * User::getFriends() {
+string* User::getFriends() {
 	return friendsList;
 }
 
@@ -217,23 +217,23 @@ string * User::getFriends() {
 */
 void User::disconnect() {
 	packetHandler->setConnected(false);
-	if (readThreadInstance.joinable() && this_thread::get_id() != readThreadInstance.get_id())
+	if(readThreadInstance.joinable() && this_thread::get_id() != readThreadInstance.get_id())
 		readThreadInstance.join();
 	else
 		readThreadInstance.detach();
-	if (writeThreadInstance.joinable() && this_thread::get_id() != writeThreadInstance.get_id())
+	if(writeThreadInstance.joinable() && this_thread::get_id() != writeThreadInstance.get_id())
 		writeThreadInstance.join();
 	else
 		writeThreadInstance.detach();
-	if (isAuthenticated()) {
+	if(isAuthenticated()) {
 		save();
-		if (getRoom() != nullptr)
+		if(getRoom() != nullptr)
 			getRoom()->leaveRoom(this);
-		User ** userList = server->getUserList();
-		for (unsigned short i = 0; i < MAX_USERS; i++) {
-			if (userList[i] == nullptr)
+		User** userList = server->getUserList();
+		for(unsigned short i = 0; i < MAX_USERS; i++) {
+			if(userList[i] == nullptr)
 				continue;
-			if (userList[i]->isFriend(getUsername()))
+			if(userList[i]->isFriend(getUsername()))
 				userList[i]->updateFriendStatus(getUsername(), false);
 		}
 	}
@@ -242,14 +242,14 @@ void User::disconnect() {
 
 /* Send a server message to the user. */
 void User::sendServerMessage(string message, unsigned short messageColor) {
-	Packet * p = packetHandler->constructPacket(SERVER_MESSAGE_PACKET_ID);
+	Packet* p = packetHandler->constructPacket(SERVER_MESSAGE_PACKET_ID);
 	*p << "<" + to_string(messageColor) + ">" + message;
 	packetHandler->finializePacket(p);
 }
 
 /* Send a room/private message from another user to the user. */
-void User::sendMessage(User * const from, string message, bool personalMessage) {
-	Packet * p = packetHandler->constructPacket(MESSAGE_PACKET_ID);
+void User::sendMessage(User* const from, string message, bool personalMessage) {
+	Packet* p = packetHandler->constructPacket(MESSAGE_PACKET_ID);
 	/**p << (isFriend(from->getUsername()) ? (unsigned short)FRIEND_COLOR : from->getUserNameColor());
 	*p << from->getUserChatColor();
 	*p << (unsigned short)(personalMessage ? 1 : 0);
@@ -269,36 +269,36 @@ void User::sendMessage(User * const from, string message, bool personalMessage) 
 */
 unsigned short User::load(string username) {
 	unsigned short code = LOAD_FAILURE;
-	if (username.empty() || !isVerified())
+	if(username.empty() || !isVerified())
 		return LOAD_FAILURE;
 	transform(username.begin(), username.end(), username.begin(), ::tolower);
 	ifstream userFile;
 	try {
 		userFile.open(SAVE_DIRECTORY + username + ".txt");
-		if (userFile.is_open()) {
+		if(userFile.is_open()) {
 			unsigned short version = 0;
 			userFile >> version;
-			switch (version) {
-			case 2:
-				userFile >> this->username;
-				usernameLowercase.resize(this->username.size());
-				transform(this->username.begin(), this->username.end(), usernameLowercase.begin(), ::tolower);
-				userFile >> userNameColor;
-				userFile >> userChatColor;
-				userFile >> password;
-				for (unsigned short i = 0; i < MAX_FRIENDS; i++) {
-					userFile >> friendsList[i];
-				}
-				break;
-			default:
-				throw exception("Unsupported file version");
+			switch(version) {
+				case 2:
+					userFile >> this->username;
+					usernameLowercase.resize(this->username.size());
+					transform(this->username.begin(), this->username.end(), usernameLowercase.begin(), ::tolower);
+					userFile >> userNameColor;
+					userFile >> userChatColor;
+					userFile >> password;
+					for(unsigned short i = 0; i < MAX_FRIENDS; i++) {
+						userFile >> friendsList[i];
+					}
+					break;
+				default:
+					throw exception("Unsupported file version");
 			}
 			userFile.close();
 			code = LOAD_SUCCESS;
 		} else {
 			code = LOAD_NEW_USER;
 		}
-	} catch (exception e) {
+	} catch(exception e) {
 		code = LOAD_FAILURE;
 		cout << e.what();
 	}
@@ -307,12 +307,12 @@ unsigned short User::load(string username) {
 
 /* Saves the user data. */
 void User::save() {
-	if (usernameLowercase.empty() || !isVerified())
+	if(usernameLowercase.empty() || !isVerified())
 		return;
 	ofstream userFile;
 	try {
 		userFile.open(SAVE_DIRECTORY + usernameLowercase + ".txt");
-		if (!userFile.is_open()) {
+		if(!userFile.is_open()) {
 			throw exception("Could not open file to save.");
 		}
 		userFile << (unsigned short)2 << endl; //File version
@@ -320,11 +320,11 @@ void User::save() {
 		userFile << userNameColor << endl;
 		userFile << userChatColor << endl;
 		userFile << password << endl;
-		for (unsigned short i = 0; i < MAX_FRIENDS; i++) {
+		for(unsigned short i = 0; i < MAX_FRIENDS; i++) {
 			userFile << friendsList[i] << endl;
 		}
 		userFile.close();
-	} catch (exception e) {
+	} catch(exception e) {
 		cout << e.what();
 	}
 }

@@ -8,15 +8,14 @@
 
 using namespace std;
 
-PacketHandler::PacketHandler(Server * server, User * const user, SOCKET socket) :
+PacketHandler::PacketHandler(Server* server, User* const user, SOCKET socket) :
 	server(server),
 	user(user),
 	socket(socket),
 	connected(true),
 	constructingPacket(nullptr),
 	peeker(new DataStream(4)),
-	stream(new DataStream(BUFFER_LENGTH)) {
-}
+	stream(new DataStream(BUFFER_LENGTH)) {}
 
 /* Continuously reads data from the socket.
 	It first will peek to see how many bytes are available to read.
@@ -29,7 +28,7 @@ PacketHandler::PacketHandler(Server * server, User * const user, SOCKET socket) 
 
 	Next, it will keep reading until it has fully read the length that was just received prior.
 	Once it has fully read the packet payload, it will begin to process them.
-	
+
 	For processing, it will first read the packet id and then will handle the packet based on the id.
 
 	If any error occurs, or the client loses connection, it will stop reading and disconnect the user from the server.
@@ -40,36 +39,36 @@ void PacketHandler::readLoop() {
 	unsigned short totalSize = 0;
 	unsigned short totalRead = 0;
 	try {
-		while (connected) {
+		while(connected) {
 			//Peek to see if we have 2 or more bytes available to read to get how much data will be in the next chunk.
-			if ((in = recv(socket, peeker->getInputBuffer(), 2, MSG_PEEK)) >= 2) {
+			if((in = recv(socket, peeker->getInputBuffer(), 2, MSG_PEEK)) >= 2) {
 				recv(socket, peeker->getInputBuffer(), 2, 0); //Consume those 2 bytes.
 				*peeker >> totalSize;
-				if (totalSize <= 0)
+				if(totalSize <= 0)
 					throw PacketException("Invalid payload size " + to_string(totalSize));
-				else if (totalSize >= stream->getSize())
+				else if(totalSize >= stream->getSize())
 					throw PacketException("Too much data received!");
-				while (connected && totalRead < totalSize) {
-					if ((in = recv(socket, stream->getInputBuffer() + totalRead, totalSize - totalRead, 0)) != SOCKET_ERROR) { //Fully read
+				while(connected && totalRead < totalSize) {
+					if((in = recv(socket, stream->getInputBuffer() + totalRead, totalSize - totalRead, 0)) != SOCKET_ERROR) { //Fully read
 						totalRead += in;
 					} else {
 						break;
 					}
 				}
-				if (in == SOCKET_ERROR)
+				if(in == SOCKET_ERROR)
 					break;
-				if (totalRead == totalSize) {
-					while (connected && totalRead > stream->getReadIndex().getPosition()) { //Process packets until all packets in the chunk of data are consumed.
+				if(totalRead == totalSize) {
+					while(connected && totalRead > stream->getReadIndex().getPosition()) { //Process packets until all packets in the chunk of data are consumed.
 						*stream >> packetId;
-						switch (packetId) {
-						case HANDSHAKE_PACKET_ID:
+						switch(packetId) {
+							case HANDSHAKE_PACKET_ID:
 							{
 								string versionCode = "";
 								*stream >> versionCode;
-								if (versionCode != VERSION_CODE) {
+								if(versionCode != VERSION_CODE) {
 									throw PacketException("Client had invalid version code: " + versionCode);
 								}
-								Packet * p = constructPacket(HANDSHAKE_PACKET_ID);
+								Packet* p = constructPacket(HANDSHAKE_PACKET_ID);
 								*p << VERSION_CODE;
 								finializePacket(p);
 								user->setVerified(true);
@@ -77,7 +76,7 @@ void PacketHandler::readLoop() {
 							}
 							case AUTHENTICATION_PACKET_ID:
 							{
-								if (!user->isVerified()) {
+								if(!user->isVerified()) {
 									throw PacketAuthException("Unverified user trying to authenticate.");
 								}
 								string username = "";
@@ -85,46 +84,46 @@ void PacketHandler::readLoop() {
 								*stream >> username;
 								*stream >> password;
 								unsigned short returnCode = AUTHENTICATION_FAILURE;
-								if (username.empty() || !server->isValidUsername(username)) {
+								if(username.empty() || !server->isValidUsername(username)) {
 									returnCode = AUTHENTICATION_INVALID_USERNAME;
 									server->log(user->getIp() + " tried to use invalid username: " + username);
 								} else {
-									if (server->getUserByName(username) != nullptr) {
+									if(server->getUserByName(username) != nullptr) {
 										returnCode = AUTHENTICATION_NAME_IN_USE;
 										server->log(user->getIp() + " tried to use username already in use: " + username);
 									} else {
-										switch (user->load(username)) {
-										case LOAD_SUCCESS:
-											returnCode = user->getPassword() == password ? AUTHENTICATION_SUCCESS : AUTHENTICATION_INVALID_PASSWORD;
-											server->log(user->getPassword() == password ? user->getUsername() + " has logged in from " + user->getIp() + "." : user->getIp() + " has used an invalid password for user: " + user->getUsername() + ".");
-											break;
-										case LOAD_NEW_USER:
-											returnCode = AUTHENTICATION_SUCCESS;
-											user->setUsername(username);
-											user->setPassword(password);
-											server->log(user->getIp() + " has created a new username: " + user->getUsername());
-											break;
-										case LOAD_FAILURE:
-										default:
-											returnCode = AUTHENTICATION_FAILURE;
-											break;
+										switch(user->load(username)) {
+											case LOAD_SUCCESS:
+												returnCode = user->getPassword() == password ? AUTHENTICATION_SUCCESS : AUTHENTICATION_INVALID_PASSWORD;
+												server->log(user->getPassword() == password ? user->getUsername() + " has logged in from " + user->getIp() + "." : user->getIp() + " has used an invalid password for user: " + user->getUsername() + ".");
+												break;
+											case LOAD_NEW_USER:
+												returnCode = AUTHENTICATION_SUCCESS;
+												user->setUsername(username);
+												user->setPassword(password);
+												server->log(user->getIp() + " has created a new username: " + user->getUsername());
+												break;
+											case LOAD_FAILURE:
+											default:
+												returnCode = AUTHENTICATION_FAILURE;
+												break;
 										}
 									}
 								}
-								Packet * p = constructPacket(AUTHENTICATION_PACKET_ID);
+								Packet* p = constructPacket(AUTHENTICATION_PACKET_ID);
 								*p << returnCode;
 								finializePacket(p);
-								if (returnCode == AUTHENTICATION_SUCCESS) {
+								if(returnCode == AUTHENTICATION_SUCCESS) {
 									user->setAuthenticated(true);
 									user->sendServerMessage("Welcome to <11>Drocsid!", DEFAULT_COLOR);
 									user->sendServerMessage("Type /joinroom [name] to join/create a room.", DEFAULT_COLOR);
 									user->sendServerMessage("Type /help for more commands.", DEFAULT_COLOR);
 
-									User ** userList = server->getUserList();
-									for (unsigned short i = 0; i < MAX_USERS; i++) {
-										if (userList[i] == nullptr)
+									User** userList = server->getUserList();
+									for(unsigned short i = 0; i < MAX_USERS; i++) {
+										if(userList[i] == nullptr)
 											continue;
-										if (userList[i]->isFriend(user->getUsername()))
+										if(userList[i]->isFriend(user->getUsername()))
 											userList[i]->updateFriendStatus(user->getUsername(), true);
 									}
 									user->sendFriendsList();
@@ -134,98 +133,98 @@ void PacketHandler::readLoop() {
 							}
 							case MESSAGE_PACKET_ID:
 							{
-								if (!user->isAuthenticated()) {
+								if(!user->isAuthenticated()) {
 									throw PacketAuthException("Unauthenticated user trying to send a message.");
 								}
 								string message = "";
 								*stream >> message;
-								if (message.length() > 0) {
+								if(message.length() > 0) {
 									bool validCommand = true;
-									if (message.at(0) == '/') {
+									if(message.at(0) == '/') {
 										size_t spacePos = message.find(' ');
-										string command = (spacePos == string::npos ? message.substr(1, message.length()) : message.substr(1, spacePos-1));
-										string arguments = (spacePos == string::npos ? "" : message.substr(spacePos+1, message.length()));
+										string command = (spacePos == string::npos ? message.substr(1, message.length()) : message.substr(1, spacePos - 1));
+										string arguments = (spacePos == string::npos ? "" : message.substr(spacePos + 1, message.length()));
 										server->log((user->getRoom() != nullptr ? "<" + user->getRoom()->getName() + "> " : "") + user->getUsername() + " used command: " + command + " with arguments: " + arguments);
-										if (command == "joinroom") {
-											if (spacePos == string::npos) {
+										if(command == "joinroom") {
+											if(spacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
 												user->sendServerMessage("Try as /joinroom [room name]");
 												break;
 											}
-											if (arguments.length() == 0 || arguments.length() > 10) {
+											if(arguments.length() == 0 || arguments.length() > 10) {
 												user->sendServerMessage("Please specify a proper room name.");
 												break;
 											}
-											if (user->getRoom() != nullptr)
+											if(user->getRoom() != nullptr)
 												user->getRoom()->leaveRoom(user);
 											bool foundRoom = false;
-											Room ** roomList = server->getRoomList();
-											for (unsigned short i = 0; i < MAX_ROOMS; i++) {
-												if (roomList[i] != nullptr) {
-													if (roomList[i]->getName() == arguments) {
+											Room** roomList = server->getRoomList();
+											for(unsigned short i = 0; i < MAX_ROOMS; i++) {
+												if(roomList[i] != nullptr) {
+													if(roomList[i]->getName() == arguments) {
 														roomList[i]->joinRoom(user);
 														foundRoom = true;
 														break;
 													}
 												}
 											}
-											if (!foundRoom) {
-												Room * newRoom = server->makeRoom(user, arguments);
-												if (newRoom == nullptr) {
-													Packet * p = user->getPacketHandler()->constructPacket(ATTEMPT_JOIN_ROOM_PACKET_ID);
+											if(!foundRoom) {
+												Room* newRoom = server->makeRoom(user, arguments);
+												if(newRoom == nullptr) {
+													Packet* p = user->getPacketHandler()->constructPacket(ATTEMPT_JOIN_ROOM_PACKET_ID);
 													*p << (unsigned short)ATTEMPT_JOIN_ROOM_FAILURE;
 													user->getPacketHandler()->finializePacket(p);
 												} else {
 													newRoom->joinRoom(user);
 												}
 											}
-										} else if (command == "leaveroom" || command == "leave") {
-											if (user->getRoom() != nullptr) {
+										} else if(command == "leaveroom" || command == "leave") {
+											if(user->getRoom() != nullptr) {
 												user->getRoom()->leaveRoom(user);
 											} else {
 												user->sendServerMessage("You're not in a room.");
 											}
 										} else if(command == "addfriend") {
-											if (spacePos == string::npos) {
+											if(spacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
 												user->sendServerMessage("Try as /addfriend [username]");
 												break;
 											}
-											if (server->doesRegisteredUsernameExist(arguments)) {
-												if (!user->addFriend(arguments)) {
+											if(server->doesRegisteredUsernameExist(arguments)) {
+												if(!user->addFriend(arguments)) {
 													user->sendServerMessage("You cannot add more than " + to_string(MAX_FRIENDS) + " friends.");
 												}
 											} else {
 												user->sendServerMessage("No one exists with the name " + arguments + ".");
 											}
-										} else if (command == "removefriend") {
-											if (spacePos == string::npos) {
+										} else if(command == "removefriend") {
+											if(spacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
 												user->sendServerMessage("Try as /removefriend [username]");
 												break;
 											}
-											if (!user->removeFriend(arguments)) {
+											if(!user->removeFriend(arguments)) {
 												user->sendServerMessage("You don't have a friend with the name " + arguments + ".");
 											}
-										} else if (command == "friendslist") {
-											string * friends = user->getFriends();
-											for (unsigned short i = 0; i < MAX_FRIENDS; i++) {
-												if (friends[i].empty())
+										} else if(command == "friendslist") {
+											string* friends = user->getFriends();
+											for(unsigned short i = 0; i < MAX_FRIENDS; i++) {
+												if(friends[i].empty())
 													continue;
 												user->sendServerMessage(friends[i], server->getUserByName(friends[i]) == nullptr ? FRIEND_OFFLINE_COLOR : FRIEND_COLOR);
 											}
-										} else if (command == "pm") {
+										} else if(command == "pm") {
 											size_t nextSpacePos = arguments.find(' ');
-											if (spacePos == string::npos || nextSpacePos == string::npos) {
+											if(spacePos == string::npos || nextSpacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
 												user->sendServerMessage("Try as /pm [username] [message]");
 												break;
 											}
 											string friendName = message.substr(spacePos + 1, nextSpacePos);
 											string actualMessage = arguments.substr(nextSpacePos + 1, arguments.length());
-											if (user->isFriend(friendName)) {
-												User * friendUser = server->getUserByName(friendName);
-												if (friendUser == nullptr) {
+											if(user->isFriend(friendName)) {
+												User* friendUser = server->getUserByName(friendName);
+												if(friendUser == nullptr) {
 													user->sendServerMessage(friendName + " is currently not online.");
 												} else {
 													user->sendMessage(friendUser, actualMessage, true);
@@ -234,8 +233,8 @@ void PacketHandler::readLoop() {
 											} else {
 												user->sendServerMessage("You are not friends with " + friendName + ".");
 											}
-										} else if (command == "settextcolor") {
-											if (spacePos == string::npos) {
+										} else if(command == "settextcolor") {
+											if(spacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
 												user->sendServerMessage("Try as /settextcolor [color number]");
 												user->sendServerMessage("Type /colors for a list of available colors.");
@@ -245,11 +244,11 @@ void PacketHandler::readLoop() {
 												unsigned short color = stoi(arguments);
 												//TODO: Check/list colors from what are valid.
 												user->setUserChatColor(color);
-											} catch (invalid_argument &) {
+											} catch(invalid_argument&) {
 												user->sendServerMessage("Please type a proper integer for your desired color.");
 											}
-										} else if (command == "setnamecolor") {
-											if (spacePos == string::npos) {
+										} else if(command == "setnamecolor") {
+											if(spacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
 												user->sendServerMessage("Try as /setnamecolor [color number]");
 												user->sendServerMessage("Type /colors for a list of available colors.");
@@ -259,17 +258,17 @@ void PacketHandler::readLoop() {
 												unsigned short color = stoi(arguments);
 												//TODO: Check/list colors from what are valid.
 												user->setUserNameColor(color);
-											} catch (invalid_argument &) {
+											} catch(invalid_argument&) {
 												user->sendServerMessage("Please type a proper integer for your desired color.");
 											}
-										} else if (command == "colors") {
+										} else if(command == "colors") {
 											string output = "";
-											for (byte i = 0; i < 255; i++) {
+											for(byte i = 0; i < 255; i++) {
 												string num = to_string(i);
 												output += "<" + num + ">" + num + " ";
 											}
 											user->sendServerMessage(output, DEFAULT_COLOR);
-										} else if (command == "help" || command == "h" || command == "?" || command == "commands") {
+										} else if(command == "help" || command == "h" || command == "?" || command == "commands") {
 											user->sendServerMessage("/joinroom [room name]", DEFAULT_COLOR);
 											user->sendServerMessage("/leaveroom", DEFAULT_COLOR);
 											user->sendServerMessage("/addfriend [username]", DEFAULT_COLOR);
@@ -295,8 +294,8 @@ void PacketHandler::readLoop() {
 								}
 								break;
 							}
-						default:
-							throw PacketException("Invalid packet id " + to_string(packetId));
+							default:
+								throw PacketException("Invalid packet id " + to_string(packetId));
 						}
 					}
 					totalRead = 0;
@@ -307,14 +306,14 @@ void PacketHandler::readLoop() {
 				}
 				peeker->resetRead();
 			}
-			if (in == SOCKET_ERROR)
+			if(in == SOCKET_ERROR)
 				break;
 		}
-	} catch (PacketAuthException & e) {
+	} catch(PacketAuthException& e) {
 		cerr << e.what() << endl;
-	} catch (PacketException & e) {
+	} catch(PacketException& e) {
 		cerr << "Read loop error: " << e.what() << endl;
-	} catch (exception & e) {
+	} catch(exception& e) {
 		cerr << "Read loop big error: " << e.what() << endl;
 	}
 	user->disconnect();
@@ -331,7 +330,7 @@ void PacketHandler::readLoop() {
 	Additionally, if it were less than 50 milliseconds it would use more CPU.
 */
 void PacketHandler::writeLoop() {
-	while (connected) {
+	while(connected) {
 		mtx.lock();
 		if(connected && stream->getWriteIndex().getPosition() > 0)
 			flush(true);
@@ -343,19 +342,19 @@ void PacketHandler::writeLoop() {
 /* Makes a new packet and returns it for modification.
 	This also locks a mutex to prevent sending data in flush() until it's finished.
 */
-Packet * PacketHandler::constructPacket(unsigned short id) {
+Packet* PacketHandler::constructPacket(unsigned short id) {
 	mtx.lock();
 	constructingPacket = new Packet(stream, id);
 	return constructingPacket;
 }
 
 /* Finializes the packet by unlocking the mutex to let flush send the fully constructed packet. */
-void PacketHandler::finializePacket(Packet * packet, bool _flush) {
-	if (packet != constructingPacket)
+void PacketHandler::finializePacket(Packet* packet, bool _flush) {
+	if(packet != constructingPacket)
 		throw runtime_error("Finialized packet wasn't the original.");
 	constructingPacket = nullptr;
 	delete packet;
-	if (_flush)
+	if(_flush)
 		flush(true);
 	mtx.unlock();
 }
@@ -366,52 +365,52 @@ void PacketHandler::finializePacket(Packet * packet, bool _flush) {
 	See the readLoop() description for the reasoning behind this.
 */
 void PacketHandler::flush(bool self) {
-	if (!connected)
+	if(!connected)
 		return;
-	if (!self)
+	if(!self)
 		mtx.lock();
 	unsigned short totalSent = 0;
 	unsigned short desiredSize = stream->getWriteIndex().getPosition();
 	*peeker << desiredSize;
 	unsigned short totalSize = peeker->getWriteIndex().getPosition();
-	while (totalSent < totalSize) {
+	while(totalSent < totalSize) {
 		int sent = send(socket, peeker->getOutputBuffer() + totalSent, totalSize - totalSent, 0);
-		if (sent == SOCKET_ERROR) { //Possibly lost connection.
+		if(sent == SOCKET_ERROR) { //Possibly lost connection.
 			user->disconnect();
-			if (!self)
+			if(!self)
 				mtx.unlock();
 			return;
 		}
 		totalSent += sent;
 	}
-	if (totalSent > totalSize) {
+	if(totalSent > totalSize) {
 		throw exception("Peeker sent more than total size.");
 	}
 	totalSent = 0;
 	totalSize = desiredSize;
-	while (totalSent < totalSize) {
+	while(totalSent < totalSize) {
 		int sent = send(socket, stream->getOutputBuffer() + totalSent, totalSize - totalSent, 0);
-		if (sent == SOCKET_ERROR) { //Possibly lost connection.
+		if(sent == SOCKET_ERROR) { //Possibly lost connection.
 			user->disconnect();
-			if (!self)
+			if(!self)
 				mtx.unlock();
 			return;
 		}
 		totalSent += sent;
 	}
-	if (totalSent > totalSize) {
+	if(totalSent > totalSize) {
 		throw exception("Stream sent more than total size.");
 	}
 	peeker->resetWrite();
 	stream->resetWrite();
-	if (!self)
+	if(!self)
 		mtx.unlock();
 }
 
 /* Sets weither or not the client is connected, if not it will close the socket. */
 void PacketHandler::setConnected(bool connected) {
 	this->connected = connected;
-	if (!connected && socket != INVALID_SOCKET) {
+	if(!connected && socket != INVALID_SOCKET) {
 		closesocket(socket);
 		socket = INVALID_SOCKET;
 	}
@@ -423,7 +422,7 @@ bool PacketHandler::isConnected() const {
 }
 
 PacketHandler::~PacketHandler() {
-	if (socket != INVALID_SOCKET) {
+	if(socket != INVALID_SOCKET) {
 		closesocket(socket);
 		socket = INVALID_SOCKET;
 	}
