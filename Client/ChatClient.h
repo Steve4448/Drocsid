@@ -14,7 +14,8 @@ class ChatClient {
 public:
 	ChatClient();
 	~ChatClient();
-	bool start();
+	void connectionDetailsPrompt();
+	void start();
 	void gotoLobby();
 	void messagePrompt();
 	void doCredentials(bool retryPassword = false);

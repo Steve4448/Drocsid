@@ -9,50 +9,60 @@
 #include <ws2tcpip.h>
 using namespace std;
 
-/* Entry point for the client, takes in the ip and the port that the client will attempt to connect to and constructs a client. */
+/* Entry point for the client. */
 int main() {
 	ChatClient client;
 	try {
-		client.start();
+		client.connectionDetailsPrompt();
+		client.getConsoleRenderer()->pushBodyMessage("Disconnected from server.", ERROR_COLOR);
 	} catch(StartupException& e) {
 		cout << "Error starting the client: " << e.what();
+		return 1;
 	}
 	return 0;
 }
 
+/* Client constructor, takes in the ip and the port that the client will attempt to connect to. */
 ChatClient::ChatClient() :
 	packetHandler(nullptr),
 	cSocket(INVALID_SOCKET),
 	username(""),
 	password(""),
+	ip(""),
+	port(0),
 	connected(false),
 	consoleRenderer(new ConsoleHandler()),
+	inRoom(nullptr),
 	friendsList(nullptr),
 	friendsListSize(0) {
+}
 
+void ChatClient::connectionDetailsPrompt() {
 	unsigned short portNum = 0;
-	string ip = "";
-	string port = "";
-	ip = consoleRenderer->getBlockingInput("Please enter the IP that the server is currently hosted at:");
+	string ipInput = "";
+	string portInput = "";
+	ipInput = consoleRenderer->getBlockingInput("Please enter the IP that the server is currently hosted at:");
 	while(portNum == 0) {
 		try {
-			port = consoleRenderer->getBlockingInput("Please enter the port that the server is currently hosted at:");
-			portNum = stoi(port);
+			portInput = consoleRenderer->getBlockingInput("Please enter the port that the server is currently hosted at:");
+			portNum = stoi(portInput);
 		} catch(invalid_argument&) {
 			consoleRenderer->pushBodyMessage("Please enter a valid port number.", ERROR_COLOR);
 		}
 	}
 	if(ip.empty())
 		ip = "127.0.0.1";
-	this->ip = ip;
-	this->port = portNum;
+	ip = ipInput;
+	port = portNum;
+
+	start();
 }
 
 /* Starts the client and attempts to connect to the server
 	Once connected it will start a thread to begin reading from the server.
 	winsock code implemented using information from https://docs.microsoft.com/en-us/windows/desktop/winsock/winsock-server-application
 */
-bool ChatClient::start() {
+void ChatClient::start() {
 	WSADATA wsaData;
 	struct addrinfo socketSpecifications;
 	struct addrinfo* socketResult = nullptr;
@@ -70,7 +80,12 @@ bool ChatClient::start() {
 
 	wsaResult = getaddrinfo(ip.c_str(), to_string(port).c_str(), &socketSpecifications, &socketResult);
 	if(wsaResult != 0) {
-		throw StartupException("getaddrinfo failed with error: ", wsaResult);
+		if(wsaResult == 11001) { //Invalid host name.
+			consoleRenderer->pushBodyMessage("Invalid host.", ERROR_COLOR);
+			connectionDetailsPrompt();
+		} else {
+			throw StartupException("getaddrinfo failed with error: ", wsaResult);
+		}
 	}
 
 	cSocket = socket(socketResult->ai_family, socketResult->ai_socktype, socketResult->ai_protocol);
@@ -83,7 +98,19 @@ bool ChatClient::start() {
 	wsaResult = connect(cSocket, socketResult->ai_addr, (int)socketResult->ai_addrlen);
 	freeaddrinfo(socketResult);
 	if(wsaResult == SOCKET_ERROR) {
-		throw StartupException("connect failed with error: ", WSAGetLastError());
+		int errorCode = WSAGetLastError();
+		switch(errorCode) {
+			case 10060: //Connection timed out.
+				consoleRenderer->pushBodyMessage("Connection timed out.", ERROR_COLOR);
+				connectionDetailsPrompt();
+				return;
+			case 10061: //Connection refused.
+				consoleRenderer->pushBodyMessage("Connection actively refused.", ERROR_COLOR);
+				connectionDetailsPrompt();
+				return;
+			default:
+				throw StartupException("connect failed with error: ", WSAGetLastError());
+		}
 	}
 
 	consoleRenderer->pushBodyMessage("Connected!");
@@ -94,7 +121,6 @@ bool ChatClient::start() {
 	*p << VERSION_CODE;
 	packetHandler->finializePacket(p, true);
 	readInstance.join();
-	return true;
 }
 
 /* Sets the client to a disconnected state. */
