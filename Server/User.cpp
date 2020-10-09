@@ -17,7 +17,7 @@ User::User(Server* server, unsigned short userId, SOCKET socket) :
 	password(""),
 	verified(false),
 	authenticated(false),
-	friendsList{""},
+	friendsList{nullptr},
 	userNameColor(DEFAULT_COLOR),
 	userChatColor(DEFAULT_CHAT_COLOR),
 	packetHandler(new PacketHandler(server, this, socket)) {
@@ -132,13 +132,26 @@ void User::setRoom(Room* room) {
 
 /* Returns true if the name is on the user's friends list, otherwise false. */
 bool User::isFriend(std::string name) {
+	transform(name.begin(), name.end(), name.begin(), ::tolower);
 	for(int i = 0; i < MAX_FRIENDS; i++) {
-		if(friendsList[i].empty())
+		if(friendsList[i] == nullptr)
 			continue;
-		if(name == friendsList[i])
+		if(name == friendsList[i]->getLowercaseName())
 			return true;
 	}
 	return false;
+}
+
+/* Returns the user's friend is found, otherwise nullptr. */
+Friend* User::getFriend(std::string name) {
+	transform(name.begin(), name.end(), name.begin(), ::tolower);
+	for(int i = 0; i < MAX_FRIENDS; i++) {
+		if(friendsList[i] == nullptr)
+			continue;
+		if(name == friendsList[i]->getLowercaseName())
+			return friendsList[i];
+	}
+	return nullptr;
 }
 
 /* Attempts to add a friend
@@ -147,12 +160,11 @@ bool User::isFriend(std::string name) {
 */
 bool User::addFriend(std::string name) {
 	for(int i = 0; i < MAX_FRIENDS; i++) {
-		if(friendsList[i].empty()) {
-			friendsList[i] = name;
+		if(friendsList[i] == nullptr) {
+			friendsList[i] = new Friend(server->getUserByName(name), name);
 			Packet* p = packetHandler->constructPacket(ADD_FRIEND_PACKET_ID);
-			User* friendUser = server->getUserByName(friendsList[i]);
-			*p << friendsList[i];
-			*p << (friendUser != nullptr && friendUser->getPacketHandler()->isConnected() ? true : false);
+			*p << friendsList[i]->getName();
+			*p << friendsList[i]->isOnline();
 			packetHandler->finializePacket(p);
 			if(getRoom() != nullptr)
 				getRoom()->updateRoomList(this);
@@ -168,9 +180,11 @@ bool User::addFriend(std::string name) {
 	- Returns true if the friend was removed from their list.  (Also updates the room list incase their friend is inside)
 */
 bool User::removeFriend(std::string name) {
+	transform(name.begin(), name.end(), name.begin(), ::tolower);
 	for(int i = 0; i < MAX_FRIENDS; i++) {
-		if(!friendsList[i].empty() && friendsList[i] == name) {
-			friendsList[i] = "";
+		if(friendsList[i] != nullptr && friendsList[i]->getLowercaseName() == name) {
+			delete friendsList[i];
+			friendsList[i] = nullptr;
 			Packet* p = packetHandler->constructPacket(REMOVE_FRIEND_PACKET_ID);
 			*p << name;
 			packetHandler->finializePacket(p);
@@ -183,10 +197,10 @@ bool User::removeFriend(std::string name) {
 	return false;
 }
 
-void User::updateFriendStatus(std::string name, bool online) {
+void User::updateFriendStatus(Friend* friendEntry) {
 	Packet* p = packetHandler->constructPacket(FRIEND_STATUS_PACKET_ID);
-	*p << name;
-	*p << online;
+	*p << friendEntry->getName();
+	*p << friendEntry->isOnline();
 	packetHandler->finializePacket(p);
 }
 
@@ -194,10 +208,9 @@ void User::sendFriendsList() {
 	Packet* p = packetHandler->constructPacket(FRIENDS_LIST_PACKET_ID);
 	*p << (unsigned short)MAX_FRIENDS;
 	for(int i = 0; i < MAX_FRIENDS; i++) {
-		if(!friendsList[i].empty()) {
-			User* friendUser = server->getUserByName(friendsList[i]);
-			*p << friendsList[i];
-			*p << (friendUser != nullptr && friendUser->getPacketHandler()->isConnected() ? true : false);
+		if(friendsList[i] != nullptr) {
+			*p << friendsList[i]->getName();
+			*p << friendsList[i]->isOnline();
 		} else {
 			*p << "";
 			*p << false;
@@ -207,7 +220,7 @@ void User::sendFriendsList() {
 }
 
 /* Return the user's friends list. */
-string* User::getFriends() {
+Friend** User::getFriends() {
 	return friendsList;
 }
 
@@ -229,13 +242,7 @@ void User::disconnect() {
 		save();
 		if(getRoom() != nullptr)
 			getRoom()->leaveRoom(this);
-		User** userList = server->getUserList();
-		for(unsigned short i = 0; i < MAX_USERS; i++) {
-			if(userList[i] == nullptr)
-				continue;
-			if(userList[i]->isFriend(getUsername()))
-				userList[i]->updateFriendStatus(getUsername(), false);
-		}
+		server->handleFriendStatusUpdate(this);
 	}
 	server->removeUser(this);
 }
@@ -287,7 +294,10 @@ unsigned short User::load(string username) {
 					userFile >> userChatColor;
 					userFile >> password;
 					for(unsigned short i = 0; i < MAX_FRIENDS; i++) {
-						userFile >> friendsList[i];
+						string friendsName;
+						userFile >> friendsName;
+						if(!friendsName.empty())
+							friendsList[i] = new Friend(server->getUserByName(friendsName), friendsName);
 					}
 					break;
 				default:
@@ -300,7 +310,7 @@ unsigned short User::load(string username) {
 		}
 	} catch(exception e) {
 		code = LOAD_FAILURE;
-		cout << e.what();
+		cout << "Failure loading " << username << "'s user file: " << e.what();
 	}
 	return code;
 }
@@ -321,7 +331,7 @@ void User::save() {
 		userFile << userChatColor << endl;
 		userFile << password << endl;
 		for(unsigned short i = 0; i < MAX_FRIENDS; i++) {
-			userFile << friendsList[i] << endl;
+			userFile << (friendsList[i] == nullptr ? "" : friendsList[i]->getName()) << endl;
 		}
 		userFile.close();
 	} catch(exception e) {
@@ -335,5 +345,8 @@ string User::getIp() {
 }
 
 User::~User() {
+	for(unsigned short i = 0; i < MAX_FRIENDS; i++) {
+		delete friendsList[i];
+	}
 	delete packetHandler;
 }

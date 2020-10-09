@@ -21,9 +21,11 @@ public:
 	Room** getRoomList();
 	Room* makeRoom(User* owner, std::string roomName);
 	void destroyRoom(Room* room);
+	void handleFriendStatusUpdate(User* user);
 	void updateRoomList();
 	void updateRoomList(User* user);
 	bool doesRegisteredUsernameExist(std::string username);
+	std::string getProperUsernameCase(std::string username);
 	bool isValidUsername(std::string username);
 	void log(std::string line);
 private:

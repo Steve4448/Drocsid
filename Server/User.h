@@ -3,6 +3,7 @@
 #include <thread>
 #include "Packet/PacketHandler.h"
 #include <winsock2.h>
+#include "Friend.h"
 class Server;
 class Room;
 
@@ -33,10 +34,11 @@ public:
 	bool isFriend(std::string name);
 	bool addFriend(std::string name);
 	bool removeFriend(std::string name);
-	void updateFriendStatus(std::string name, bool online);
+	Friend* getFriend(std::string name);
+	void updateFriendStatus(Friend* friendEntry);
 	void sendFriendsList();
 	std::string getIp();
-	std::string* getFriends();
+	Friend** getFriends();
 	PacketHandler* getPacketHandler();
 	void sendServerMessage(std::string message, unsigned short messageColor = ERROR_COLOR);
 private:
@@ -51,7 +53,7 @@ private:
 	std::string username;
 	std::string usernameLowercase;
 	std::string password;
-	std::string friendsList[MAX_FRIENDS];
+	Friend* friendsList[MAX_FRIENDS];
 	std::string ip;
 	bool verified;
 	bool authenticated;

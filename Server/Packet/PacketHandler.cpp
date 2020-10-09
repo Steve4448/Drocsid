@@ -119,13 +119,7 @@ void PacketHandler::readLoop() {
 									user->sendServerMessage("Type /joinroom [name] to join/create a room.", DEFAULT_COLOR);
 									user->sendServerMessage("Type /help for more commands.", DEFAULT_COLOR);
 
-									User** userList = server->getUserList();
-									for(unsigned short i = 0; i < MAX_USERS; i++) {
-										if(userList[i] == nullptr)
-											continue;
-										if(userList[i]->isFriend(user->getUsername()))
-											userList[i]->updateFriendStatus(user->getUsername(), true);
-									}
+									server->handleFriendStatusUpdate(user);
 									user->sendFriendsList();
 									server->updateRoomList(user);
 								}
@@ -190,12 +184,26 @@ void PacketHandler::readLoop() {
 												user->sendServerMessage("Try as /addfriend [username]");
 												break;
 											}
-											if(server->doesRegisteredUsernameExist(arguments)) {
-												if(!user->addFriend(arguments)) {
-													user->sendServerMessage("You cannot add more than " + to_string(MAX_FRIENDS) + " friends.");
-												}
-											} else {
+											if(!server->isValidUsername(arguments)) {
+												user->sendServerMessage("Invalid username specified.");
+												break;
+											}
+											string properUsername = server->getProperUsernameCase(arguments);
+											if(properUsername.empty()) {
 												user->sendServerMessage("No one exists with the name " + arguments + ".");
+												break;
+											}
+											if(properUsername == user->getUsername()) {
+												user->sendServerMessage("You cannot add yourself.");
+												break;
+											}
+											if(user->isFriend(properUsername)) {
+												user->sendServerMessage("You've already added " + properUsername + ".");
+												break;
+											}
+											if(!user->addFriend(properUsername)) {
+												user->sendServerMessage("You cannot add more than " + to_string(MAX_FRIENDS) + " friends.");
+												break;
 											}
 										} else if(command == "removefriend") {
 											if(spacePos == string::npos) {
@@ -207,11 +215,11 @@ void PacketHandler::readLoop() {
 												user->sendServerMessage("You don't have a friend with the name " + arguments + ".");
 											}
 										} else if(command == "friendslist") {
-											string* friends = user->getFriends();
+											Friend** friends = user->getFriends();
 											for(unsigned short i = 0; i < MAX_FRIENDS; i++) {
-												if(friends[i].empty())
+												if(friends[i] == nullptr)
 													continue;
-												user->sendServerMessage(friends[i], server->getUserByName(friends[i]) == nullptr ? FRIEND_OFFLINE_COLOR : FRIEND_COLOR);
+												user->sendServerMessage(friends[i]->getName(), friends[i]->isOnline() ? FRIEND_COLOR : FRIEND_OFFLINE_COLOR);
 											}
 										} else if(command == "pm") {
 											size_t nextSpacePos = arguments.find(' ');
@@ -222,16 +230,17 @@ void PacketHandler::readLoop() {
 											}
 											string friendName = message.substr(spacePos + 1, nextSpacePos);
 											string actualMessage = arguments.substr(nextSpacePos + 1, arguments.length());
-											if(user->isFriend(friendName)) {
-												User* friendUser = server->getUserByName(friendName);
-												if(friendUser == nullptr) {
-													user->sendServerMessage(friendName + " is currently not online.");
-												} else {
-													user->sendMessage(friendUser, actualMessage, true);
-													friendUser->sendMessage(user, actualMessage, true);
-												}
-											} else {
+											Friend* userFriend = user->getFriend(friendName);
+											if(userFriend == nullptr) {
 												user->sendServerMessage("You are not friends with " + friendName + ".");
+												break;
+											}
+											if(userFriend->isOnline() && userFriend->getActiveUser() != nullptr) {
+												user->sendMessage(userFriend->getActiveUser(), actualMessage, true);
+												userFriend->getActiveUser()->sendMessage(user, actualMessage, true);
+											} else {
+												user->sendServerMessage(friendName + " is currently not online.");
+												break;
 											}
 										} else if(command == "settextcolor") {
 											if(spacePos == string::npos) {

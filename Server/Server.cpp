@@ -167,6 +167,20 @@ void Server::updateRoomList() {
 	}
 }
 
+/* Sends a friend status update to anyone that is friends with the specified user. */
+void Server::handleFriendStatusUpdate(User* user) {
+	User** userList = getUserList();
+	for(unsigned short i = 0; i < MAX_USERS; i++) {
+		if(userList[i] == nullptr)
+			continue;
+		Friend* friendEntry = userList[i]->getFriend(user->getUsername());
+		if(friendEntry != nullptr) {
+			friendEntry->setActiveUser(user->getPacketHandler()->isConnected() ? user : nullptr);
+			userList[i]->updateFriendStatus(friendEntry);
+		}
+	}
+}
+
 /* Sends a room list update to a specific user. */
 void Server::updateRoomList(User* user) {
 	Packet* p = user->getPacketHandler()->constructPacket(ROOM_STATUS_UPDATE_PACKET_ID);
@@ -223,6 +237,34 @@ bool Server::doesRegisteredUsernameExist(string username) {
 	bool exists = saveFile.is_open();
 	saveFile.close();
 	return exists;
+}
+
+/* Checks to see if the username is registered by attempting to load the user save file, and if so returns the proper case of that username. Otherwise returns an empty string. */
+string Server::getProperUsernameCase(string username) {
+	transform(username.begin(), username.end(), username.begin(), ::tolower);
+	ifstream userFile;
+	try {
+		userFile.open(SAVE_DIRECTORY + username + ".txt");
+		if(userFile.is_open()) {
+			string properName;
+			unsigned short version = 0;
+			userFile >> version;
+			switch(version) {
+				case 2:
+					userFile >> properName;
+					break;
+				default:
+					throw exception("Unsupported file version");
+			}
+			userFile.close();
+			return properName;
+		} else {
+			return "";
+		}
+	} catch(exception e) {
+		cout << "Failure loading " << username << "'s proper username from save: " << e.what();
+	}
+	return "";
 }
 
 /* Appends the line to the log file and also outputs it to the console. */

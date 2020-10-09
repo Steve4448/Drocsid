@@ -149,6 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Friend.cpp" />
     <ClCompile Include="Packet\DataStream.cpp" />
     <ClCompile Include="Packet\Packet.cpp" />
     <ClCompile Include="Packet\PacketHandler.cpp" />
@@ -159,6 +160,7 @@
   <ItemGroup>
     <ClInclude Include="Exception\PacketException.h" />
     <ClInclude Include="Exception\StartupException.h" />
+    <ClInclude Include="Friend.h" />
     <ClInclude Include="Packet\DataStream.h" />
     <ClInclude Include="Packet\Packet.h" />
     <ClInclude Include="Packet\PacketHandler.h" />
