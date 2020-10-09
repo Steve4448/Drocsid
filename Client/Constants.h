@@ -28,5 +28,5 @@
 #define DEFAULT_COLOR 15
 #define BORDER_COLOR 8
 
-#define VERSION_CODE "Drocsid 0.3"
+#define VERSION_CODE "Drocsid 0.4"
 #endif //CONSTANTS_H_

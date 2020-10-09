@@ -198,6 +198,15 @@ void ChatClient::setFriendsList(unsigned short friendsListSize, Friend** friends
 	this->friendsList = friendsList;
 }
 
+bool ChatClient::isFriend(string name) {
+	for(unsigned short i = 0; i < friendsListSize; i++) {
+		if(friendsList[i] != nullptr && friendsList[i]->getName() == name) {
+			return true;
+		}
+	}
+	return false;
+}
+
 Friend** ChatClient::getFriendsList() {
 	return friendsList;
 }

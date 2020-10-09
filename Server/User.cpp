@@ -256,17 +256,18 @@ void User::sendServerMessage(string message, unsigned short messageColor) {
 }
 
 /* Send a room/private message from another user to the user. */
-void User::sendMessage(User* const from, string message, bool personalMessage) {
+void User::sendMessage(User* const from, string message, bool statusMessage, bool personalMessage, bool isSender) {
 	Packet* p = packetHandler->constructPacket(MESSAGE_PACKET_ID);
-	/**p << (isFriend(from->getUsername()) ? (unsigned short)FRIEND_COLOR : from->getUserNameColor());
-	*p << from->getUserChatColor();
-	*p << (unsigned short)(personalMessage ? 1 : 0);
-	*p << from->getUsername();
-	*p << message;*/
-
-	*p << "<" + to_string((isFriend(from->getUsername()) ? (unsigned short)FRIEND_COLOR : from->getUserNameColor())) + ">" + from->getUsername() +
+	/**p << "<" + to_string((isFriend(from->getUsername()) ? (unsigned short)FRIEND_COLOR : from->getUserNameColor())) + ">" + from->getUsername() +
 		"<" + to_string(DEFAULT_COLOR) + ">" + ": " +
-		"<" + to_string(from->getUserChatColor()) + ">" + message;
+		"<" + to_string(from->getUserChatColor()) + ">" + message;*/
+	*p << from->getUsername();
+	*p << from->getUserNameColor();
+	*p << from->getUserChatColor();
+	*p << statusMessage;
+	*p << personalMessage;
+	*p << isSender;
+	*p << message;
 	packetHandler->finializePacket(p);
 }
 

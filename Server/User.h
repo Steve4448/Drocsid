@@ -41,7 +41,7 @@ public:
 	std::string getIp();
 	Friend** getFriends();
 	PacketHandler* getPacketHandler();
-	void sendMessage(User* const from, std::string message, bool personalMessage);
+	void sendMessage(User* const from, std::string message, bool statusMessage, bool personalMessage, bool isSender);
 	void sendServerMessage(std::string message, unsigned short messageColor = ERROR_COLOR);
 private:
 	Server* server;

@@ -39,5 +39,5 @@
 #define DEFAULT_COLOR 15
 #define DEFAULT_CHAT_COLOR 11
 
-#define VERSION_CODE "Drocsid 0.3"
+#define VERSION_CODE "Drocsid 0.4"
 #endif //CONSTANTS_H_

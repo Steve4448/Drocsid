@@ -98,9 +98,27 @@ void PacketHandler::readLoop() {
 							}
 							case MESSAGE_PACKET_ID:
 							{
-								string message = "";
+								string messageFrom;
+								unsigned short usernameColor;
+								unsigned short userChatColor;
+								bool statusMessage;
+								bool personalMessage;
+								bool isSender;
+								string message;
+								*stream >> messageFrom;
+								*stream >> usernameColor;
+								*stream >> userChatColor;
+								*stream >> statusMessage;
+								*stream >> personalMessage;
+								*stream >> isSender;
 								*stream >> message;
-								user->getConsoleRenderer()->pushBodyMessage(message);
+								user->getConsoleRenderer()->pushBodyMessage(
+									(personalMessage ? "<" + to_string(FRIEND_COLOR) + ">" + (isSender ? "[TO]" : "[FROM]") + " " : "") +
+									"<" + to_string((user->isFriend(messageFrom) ? FRIEND_COLOR : usernameColor)) + ">" +
+									messageFrom +
+									"<" + to_string(DEFAULT_COLOR) + ">" +
+									(statusMessage ? " " : ": ") +
+									"<" + to_string(userChatColor) + ">" + message);
 								break;
 							}
 							case ATTEMPT_JOIN_ROOM_PACKET_ID:

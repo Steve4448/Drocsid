@@ -238,8 +238,8 @@ void PacketHandler::readLoop() {
 												user->sendServerMessage("Surely you're not that lonely.");
 												break;
 											}
-											user->sendMessage(pmUser, actualMessage, true);
-											pmUser->sendMessage(user, actualMessage, true);
+											user->sendMessage(pmUser, actualMessage, false, true, true);
+											pmUser->sendMessage(user, actualMessage, false, true, false);
 											pmUser->setReplyUsername(user->getUsername());
 											user->setReplyUsername(pmUser->getUsername());
 										} else if(command == "r" || command == "reply") {
@@ -257,8 +257,8 @@ void PacketHandler::readLoop() {
 												user->sendServerMessage(user->getReplyUsername() + " is no longer online.");
 												break;
 											}
-											user->sendMessage(pmUser, arguments, true);
-											pmUser->sendMessage(user, arguments, true);
+											user->sendMessage(pmUser, arguments, false, true, true);
+											pmUser->sendMessage(user, arguments, false, true, false);
 											pmUser->setReplyUsername(user->getUsername());
 										} else if(command == "settextcolor") {
 											if(spacePos == string::npos) {

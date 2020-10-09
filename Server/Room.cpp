@@ -16,7 +16,7 @@ void Room::sendMessage(User* user, std::string message) {
 	for(unsigned short i = 0; i < MAX_ROOM_USERS; i++) {
 		if(userList[i] == nullptr)
 			continue;
-		userList[i]->sendMessage(user, message, false);
+		userList[i]->sendMessage(user, message, false, false, userList[i] == user);
 	}
 }
 
@@ -36,7 +36,11 @@ void Room::joinRoom(User* user) {
 	user->getPacketHandler()->finializePacket(p);
 
 	if(user->getRoom() != nullptr) {
-		sendMessage(user, "has joined the room.");
+		for(unsigned short i = 0; i < MAX_ROOM_USERS; i++) {
+			if(userList[i] == nullptr)
+				continue;
+			userList[i]->sendMessage(user, "has joined the room.", true, false, true);
+		}
 		updateRoomList();
 		server->updateRoomList();
 	}
@@ -57,7 +61,7 @@ void Room::leaveRoom(User* user) {
 			userList[i] = nullptr;
 			userCount--;
 		} else {
-			userList[i]->sendMessage(user, "has left the room.", false);
+			userList[i]->sendMessage(user, "has left the room.", true, false, false);
 		}
 	}
 	if(user == owner || userCount == 0) {

@@ -27,6 +27,7 @@ public:
 	bool isInRoom();
 	void setFriendsList(unsigned short friendsListSize, Friend** friendsList);
 	Friend** getFriendsList();
+	bool isFriend(std::string name);
 	unsigned short getFriendsListSize();
 private:
 	unsigned int port;
