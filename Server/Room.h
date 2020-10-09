@@ -7,21 +7,21 @@ class Server;
 
 class Room {
 public:
-	Room(Server* server, User* owner, std::string roomName);
+	Room(Server* const server, User* const owner, std::string roomName);
 	~Room();
-	void joinRoom(User* user);
-	void leaveRoom(User* user);
-	User* getOwner();
+	void joinRoom(User* const user);
+	void leaveRoom(User* const user);
+	User* const getOwner();
 	std::string getName();
-	User** getUserList();
+	User** const getUserList();
 	void updateRoomList();
-	void updateRoomList(User* user);
+	void updateRoomList(User* const user);
 	unsigned short getUserCount();
 	void ensureEmpty();
-	void sendMessage(User* user, std::string message);
+	void sendMessage(User* const user, std::string message);
 private:
-	Server* server;
-	User* owner;
+	Server* const server;
+	User* const owner;
 	std::string roomName;
 	User* userList[MAX_ROOM_USERS];
 	unsigned short userCount;

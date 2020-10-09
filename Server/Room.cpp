@@ -3,7 +3,7 @@
 #include "Server.h"
 
 
-Room::Room(Server* server, User* owner, std::string roomName) :
+Room::Room(Server* const server, User* const owner, std::string roomName) :
 	server(server),
 	owner(owner),
 	roomName(roomName),
@@ -12,7 +12,7 @@ Room::Room(Server* server, User* owner, std::string roomName) :
 }
 
 /* Relays a message to every user within the room. */
-void Room::sendMessage(User* user, std::string message) {
+void Room::sendMessage(User* const user, std::string message) {
 	for(unsigned short i = 0; i < MAX_ROOM_USERS; i++) {
 		if(userList[i] == nullptr)
 			continue;
@@ -21,7 +21,7 @@ void Room::sendMessage(User* user, std::string message) {
 }
 
 /* Adds the user to the room and updates everyones room user list. */
-void Room::joinRoom(User* user) {
+void Room::joinRoom(User* const user) {
 	for(unsigned short i = 0; i < MAX_ROOM_USERS; i++) {
 		if(userList[i] == nullptr) {
 			userList[i] = user;
@@ -49,7 +49,7 @@ void Room::joinRoom(User* user) {
 /* Removes the user from the room and updates everyones room user list.
 	Also once the owner leaves the room will be destroyed.
 */
-void Room::leaveRoom(User* user) {
+void Room::leaveRoom(User* const user) {
 	Packet* p = user->getPacketHandler()->constructPacket(LEAVE_ROOM_PACKET_ID);
 	user->getPacketHandler()->finializePacket(p);
 	user->setRoom(nullptr);
@@ -94,7 +94,7 @@ void Room::updateRoomList() {
 }
 
 /* Sends the list of who is inside the room to a user. */
-void Room::updateRoomList(User* user) {
+void Room::updateRoomList(User* const user) {
 	Packet* p = user->getPacketHandler()->constructPacket(UPDATE_ROOM_LIST_PACKET_ID);
 	*p << userCount;
 	for(unsigned short i2 = 0; i2 < MAX_ROOM_USERS; i2++) {
@@ -107,12 +107,12 @@ void Room::updateRoomList(User* user) {
 }
 
 /* Returns the list of users inside the room. */
-User** Room::getUserList() {
+User** const Room::getUserList() {
 	return userList;
 }
 
 /* Returns the user that is the owner of this room. */
-User* Room::getOwner() {
+User* const Room::getOwner() {
 	return owner;
 }
 

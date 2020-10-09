@@ -3,18 +3,18 @@
 #include <algorithm>
 using namespace std;
 
-Friend::Friend(User* activeUser, string name) :
+Friend::Friend(User* const activeUser, string name) :
 	activeUser(activeUser),
 	name(name),
 	lowercaseName(name) {
 	transform(lowercaseName.begin(), lowercaseName.end(), lowercaseName.begin(), ::tolower);
 }
 
-User* Friend::getActiveUser() {
+User* const Friend::getActiveUser() {
 	return activeUser;
 }
 
-void Friend::setActiveUser(User* activeUser) {
+void Friend::setActiveUser(User* const activeUser) {
 	this->activeUser = activeUser;
 }
 

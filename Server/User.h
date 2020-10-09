@@ -12,7 +12,7 @@ public:
 	User(Server* server, unsigned short userId, SOCKET socket);
 	~User();
 	Room* getRoom() const;
-	void setRoom(Room* room);
+	void setRoom(Room* const room);
 	std::string getUsername() const;
 	void setUsername(std::string username);
 	std::string getUsernameLowercase() const;
@@ -33,13 +33,13 @@ public:
 	bool isFriend(std::string name);
 	bool addFriend(std::string name);
 	bool removeFriend(std::string name);
-	Friend* getFriend(std::string name);
-	void updateFriendStatus(User* friendUser, Friend* friendEntry);
+	Friend* const getFriend(std::string name);
+	void updateFriendStatus(User* const friendUser, Friend* const friendEntry);
 	void sendFriendsList();
 	void setReplyUsername(std::string name);
 	std::string getReplyUsername();
 	std::string getIp();
-	Friend** getFriends();
+	Friend** const getFriends();
 	PacketHandler* getPacketHandler();
 	void sendMessage(User* const from, std::string message, bool statusMessage, bool personalMessage, bool isSender);
 	void sendServerMessage(std::string message, unsigned short messageColor = ERROR_COLOR);

@@ -189,11 +189,11 @@ void ChatClient::messagePrompt() {
 	}
 }
 
-ConsoleHandler* ChatClient::getConsoleRenderer() {
+ConsoleHandler* const ChatClient::getConsoleRenderer() {
 	return consoleRenderer;
 }
 
-void ChatClient::setFriendsList(unsigned short friendsListSize, Friend** friendsList) {
+void ChatClient::setFriendsList(unsigned short friendsListSize, Friend** const friendsList) {
 	this->friendsListSize = friendsListSize;
 	this->friendsList = friendsList;
 }
@@ -207,7 +207,7 @@ bool ChatClient::isFriend(string name) {
 	return false;
 }
 
-Friend** ChatClient::getFriendsList() {
+Friend** const ChatClient::getFriendsList() {
 	return friendsList;
 }
 

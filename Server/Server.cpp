@@ -125,14 +125,14 @@ mainLoop: while(listening) {
 }
 
 /* Returns the servers room list array. */
-Room** Server::getRoomList() {
+Room** const Server::getRoomList() {
 	return roomList;
 }
 
 /* Attempts to make a room
 - Returns nullptr if there is no room spaces left.
 - Returns address of room if a room was successfully made. */
-Room* Server::makeRoom(User* owner, string roomName) {
+Room* const Server::makeRoom(User* const owner, string roomName) {
 	for(unsigned short i = 0; i < MAX_ROOMS; i++) {
 		if(roomList[i] == nullptr) {
 			roomCount++;
@@ -144,7 +144,7 @@ Room* Server::makeRoom(User* owner, string roomName) {
 }
 
 /* Destroys the room, first ensures everyone has left it. */
-void Server::destroyRoom(Room* room) {
+void Server::destroyRoom(Room* const room) {
 	for(unsigned short i = 0; i < MAX_ROOMS; i++) {
 		if(roomList[i] == room) {
 			log("Room " + room->getName() + " destroyed.");
@@ -168,7 +168,7 @@ void Server::updateRoomList() {
 }
 
 /* Sends a friend status update to anyone that is friends with the specified user. */
-void Server::handleFriendStatusUpdate(User* user) {
+void Server::handleFriendStatusUpdate(User* const user) {
 	User** userList = getUserList();
 	for(unsigned short i = 0; i < MAX_USERS; i++) {
 		if(userList[i] == nullptr)
@@ -200,14 +200,14 @@ void Server::removeUser(User* user) {
 }
 
 /* Returns the user list array. */
-User** Server::getUserList() {
+User** const Server::getUserList() {
 	return userList;
 }
 
 /* Finds the user in the user list by the specified name.
 - Returns nullptr if no one was found by that name.
 - Returns the user pointer if the name was found. */
-User* Server::getUserByName(string name) {
+User* const Server::getUserByName(string name) {
 	if(name.empty())
 		return nullptr;
 	transform(name.begin(), name.end(), name.begin(), ::tolower);

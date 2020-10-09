@@ -8,7 +8,7 @@
 
 using namespace std;
 
-PacketHandler::PacketHandler(Server* server, User* const user, SOCKET socket) :
+PacketHandler::PacketHandler(Server* const server, User* const user, SOCKET socket) :
 	server(server),
 	user(user),
 	socket(socket),
@@ -370,14 +370,14 @@ void PacketHandler::writeLoop() {
 /* Makes a new packet and returns it for modification.
 	This also locks a mutex to prevent sending data in flush() until it's finished.
 */
-Packet* PacketHandler::constructPacket(unsigned short id) {
+Packet* const PacketHandler::constructPacket(unsigned short id) {
 	mtx.lock();
 	constructingPacket = new Packet(stream, id);
 	return constructingPacket;
 }
 
 /* Finializes the packet by unlocking the mutex to let flush send the fully constructed packet. */
-void PacketHandler::finializePacket(Packet* packet, bool _flush) {
+void PacketHandler::finializePacket(Packet* const packet, bool _flush) {
 	if(packet != constructingPacket)
 		throw runtime_error("Finialized packet wasn't the original.");
 	constructingPacket = nullptr;

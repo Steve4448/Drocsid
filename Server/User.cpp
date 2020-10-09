@@ -127,7 +127,7 @@ Room* User::getRoom() const {
 }
 
 /* Set the room the user is inside. */
-void User::setRoom(Room* room) {
+void User::setRoom(Room* const room) {
 	this->room = room;
 }
 
@@ -144,7 +144,7 @@ bool User::isFriend(std::string name) {
 }
 
 /* Returns the user's friend is found, otherwise nullptr. */
-Friend* User::getFriend(std::string name) {
+Friend* const User::getFriend(std::string name) {
 	transform(name.begin(), name.end(), name.begin(), ::tolower);
 	for(int i = 0; i < MAX_FRIENDS; i++) {
 		if(friendsList[i] == nullptr)
@@ -198,7 +198,7 @@ bool User::removeFriend(std::string name) {
 	return false;
 }
 
-void User::updateFriendStatus(User* friendUser, Friend* friendEntry) {
+void User::updateFriendStatus(User* const friendUser, Friend* const friendEntry) {
 	friendEntry->setActiveUser(friendUser->getPacketHandler()->isConnected() ? friendUser : nullptr);
 
 	Packet* p = packetHandler->constructPacket(FRIEND_STATUS_PACKET_ID);
@@ -224,7 +224,7 @@ void User::sendFriendsList() {
 }
 
 /* Return the user's friends list. */
-Friend** User::getFriends() {
+Friend** const User::getFriends() {
 	return friendsList;
 }
 

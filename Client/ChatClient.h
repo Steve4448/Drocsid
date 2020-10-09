@@ -22,11 +22,11 @@ public:
 	void disconnect();
 	std::string getUsername();
 	std::string getPassword();
-	ConsoleHandler* getConsoleRenderer();
+	ConsoleHandler* const getConsoleRenderer();
 	void setInRoom(bool inRoom);
 	bool isInRoom();
-	void setFriendsList(unsigned short friendsListSize, Friend** friendsList);
-	Friend** getFriendsList();
+	void setFriendsList(unsigned short friendsListSize, Friend** const friendsList);
+	Friend** const getFriendsList();
 	bool isFriend(std::string name);
 	unsigned short getFriendsListSize();
 private:

@@ -12,8 +12,8 @@ public:
 	~PacketHandler();
 	void readLoop();
 	void setConnected(bool connected);
-	Packet* constructPacket(unsigned short);
-	void finializePacket(Packet* packet, bool _flush = false);
+	Packet* const constructPacket(unsigned short);
+	void finializePacket(Packet* const packet, bool _flush = false);
 	void flush(bool self = false);
 private:
 	SOCKET socket;

@@ -43,9 +43,9 @@ public:
 	~ConsoleHandler();
 	std::string getBlockingInput(std::string promptMessage = "");
 	void pushBodyMessage(std::string message, unsigned short defaultColor = DEFAULT_COLOR, bool newLine = true, bool push = true);
-	void updateTopRight(std::string* names, unsigned short* colors, unsigned short count, bool push = true);
-	void updateBottomRight(Friend** friends, unsigned short count, bool push = true);
-	void updateBottomRight(std::string* names, unsigned short* colors, unsigned short count, bool push = true);
+	void updateTopRight(std::string* const names, unsigned short* const colors, unsigned short count, bool push = true);
+	void updateBottomRight(Friend** const friends, unsigned short count, bool push = true);
+	void updateBottomRight(std::string* const names, unsigned short* const colors, unsigned short count, bool push = true);
 private:
 	bool running;
 	INPUT_RECORD inputBuffer[INPUT_BUFFER_SIZE];

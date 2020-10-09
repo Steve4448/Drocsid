@@ -12,7 +12,7 @@ public:
 
 private:
 	Packet(DataStream* const stream, unsigned short packetId);
-	DataStream* stream;
+	DataStream* const stream;
 	unsigned short currentIndex;
 	unsigned short const packetId;
 

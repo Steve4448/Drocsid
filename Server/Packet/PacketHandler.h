@@ -17,16 +17,16 @@ public:
 	void writeLoop();
 	void setConnected(bool connected);
 	bool isConnected() const;
-	Packet* constructPacket(unsigned short);
-	void finializePacket(Packet* packet, bool _flush = false);
+	Packet* const constructPacket(unsigned short);
+	void finializePacket(Packet* const packet, bool _flush = false);
 	void flush(bool self = false);
 private:
-	Server* server;
+	Server* const server;
 	SOCKET socket;
 	User* const user;
 	bool connected;
-	DataStream* stream;
-	DataStream* peeker;
+	DataStream* const stream;
+	DataStream* const peeker;
 	std::mutex mtx;
 	Packet* constructingPacket;
 };

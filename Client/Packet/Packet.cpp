@@ -1,7 +1,7 @@
 #include "Packet.h"
 using namespace std;
 
-Packet::Packet(DataStream* stream, unsigned short packetId) : stream(stream), packetId(packetId), currentIndex(0) {
+Packet::Packet(DataStream* const stream, unsigned short packetId) : stream(stream), packetId(packetId), currentIndex(0) {
 	*this << (int)getId();
 }
 

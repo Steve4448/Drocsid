@@ -661,7 +661,7 @@ void ConsoleHandler::readInput() {
 	}
 }
 
-void ConsoleHandler::updateTopRight(string* names, unsigned short* colors, unsigned short count, bool push) {
+void ConsoleHandler::updateTopRight(string* const names, unsigned short* const colors, unsigned short count, bool push) {
 	if(push)
 		outputMutex.lock();
 	COORD lastCursor = curCursor;
@@ -687,7 +687,7 @@ void ConsoleHandler::updateTopRight(string* names, unsigned short* colors, unsig
 		outputMutex.unlock();
 }
 
-void ConsoleHandler::updateBottomRight(Friend** friends, unsigned short count, bool push) {
+void ConsoleHandler::updateBottomRight(Friend** const friends, unsigned short count, bool push) {
 	string* names = new string[count];
 	unsigned short* colors = new unsigned short[count];
 	for(unsigned short i = 0; i < count; i++) {
@@ -704,7 +704,7 @@ void ConsoleHandler::updateBottomRight(Friend** friends, unsigned short count, b
 	delete[] colors;
 }
 
-void ConsoleHandler::updateBottomRight(std::string* names, unsigned short* colors, unsigned short count, bool push) {
+void ConsoleHandler::updateBottomRight(std::string* const names, unsigned short* const colors, unsigned short count, bool push) {
 	if(push)
 		outputMutex.lock();
 	COORD lastCursor = curCursor;
