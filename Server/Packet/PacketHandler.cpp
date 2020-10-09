@@ -228,20 +228,18 @@ void PacketHandler::readLoop() {
 												user->sendServerMessage("Try as /pm [username] [message]");
 												break;
 											}
-											string friendName = message.substr(spacePos + 1, nextSpacePos);
+											string pmName = message.substr(spacePos + 1, nextSpacePos);
 											string actualMessage = arguments.substr(nextSpacePos + 1, arguments.length());
-											Friend* userFriend = user->getFriend(friendName);
-											if(userFriend == nullptr) {
-												user->sendServerMessage("You are not friends with " + friendName + ".");
+											User* pmUser = server->getUserByName(pmName);
+											if(pmUser == nullptr) {
+												user->sendServerMessage("Could not find " + pmName + ".");
+												break;
+											} else if(pmUser == user) {
+												user->sendServerMessage("Surely you're not that lonely.");
 												break;
 											}
-											if(userFriend->isOnline() && userFriend->getActiveUser() != nullptr) {
-												user->sendMessage(userFriend->getActiveUser(), actualMessage, true);
-												userFriend->getActiveUser()->sendMessage(user, actualMessage, true);
-											} else {
-												user->sendServerMessage(friendName + " is currently not online.");
-												break;
-											}
+											user->sendMessage(pmUser, actualMessage, true);
+											pmUser->sendMessage(user, actualMessage, true);
 										} else if(command == "settextcolor") {
 											if(spacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
