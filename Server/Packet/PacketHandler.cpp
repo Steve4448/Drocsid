@@ -125,9 +125,9 @@ void PacketHandler::readLoop() {
 										if (userList[i] == nullptr)
 											continue;
 										if (userList[i]->isFriend(user->getUsername()))
-											userList[i]->updateFriendsList();
+											userList[i]->updateFriendStatus(user->getUsername(), true);
 									}
-									user->updateFriendsList();
+									user->sendFriendsList();
 									server->updateRoomList(user);
 								}
 								break;
@@ -191,7 +191,6 @@ void PacketHandler::readLoop() {
 												user->sendServerMessage("Try as /addfriend [username]");
 												break;
 											}
-											//TODO: Check master user list to see if this username is valid.
 											if (server->doesRegisteredUsernameExist(arguments)) {
 												if (!user->addFriend(arguments)) {
 													user->sendServerMessage("You cannot add more than " + to_string(MAX_FRIENDS) + " friends.");
@@ -205,7 +204,6 @@ void PacketHandler::readLoop() {
 												user->sendServerMessage("Try as /removefriend [username]");
 												break;
 											}
-											//TODO: Check master user list to see if this username is valid.
 											if (!user->removeFriend(arguments)) {
 												user->sendServerMessage("You don't have a friend with the name " + arguments + ".");
 											}

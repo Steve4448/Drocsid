@@ -9,6 +9,7 @@
 #include <iostream>
 #include <condition_variable>
 #include "../Constants.h"
+#include "../Friend.h"
 class MessageEntry {
 public:
 	MessageEntry(std::string message, unsigned short defaultColor, bool newLine) :
@@ -44,7 +45,8 @@ public:
 	std::string getBlockingInput(std::string promptMessage = "");
 	void pushBodyMessage(std::string message, unsigned short defaultColor = DEFAULT_COLOR, bool newLine = true, bool push = true);
 	void updateTopRight(std::string * names, unsigned short * colors, unsigned short count, bool push = true);
-	void updateBottomRight(std::string * names, unsigned short * colors, unsigned short count, bool push = true);
+	void updateBottomRight(Friend ** friends, unsigned short count, bool push = true);
+	void updateBottomRight(std::string* names, unsigned short* colors, unsigned short count, bool push = true);
 private:
 	bool running;
 	INPUT_RECORD inputBuffer[INPUT_BUFFER_SIZE];

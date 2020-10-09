@@ -6,6 +6,7 @@
 #include <thread>
 #include "Packet/PacketHandler.h"
 #include "UI/ConsoleHandler.h"
+#include "Friend.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -23,6 +24,9 @@ public:
 	ConsoleHandler * getConsoleRenderer();
 	void setInRoom(bool inRoom);
 	bool isInRoom();
+	void setFriendsList(unsigned short friendsListSize, Friend** friendsList);
+	Friend** getFriendsList();
+	unsigned short getFriendsListSize();
 private:
 	unsigned int port;
 	std::string ip;
@@ -32,6 +36,8 @@ private:
 	PacketHandler * packetHandler;
 	std::string username;
 	std::string password;
+	unsigned short friendsListSize;
+	Friend ** friendsList;
 	bool connected;
 	bool inRoom;
 	ConsoleHandler * consoleRenderer;

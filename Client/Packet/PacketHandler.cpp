@@ -1,5 +1,6 @@
 #include "PacketHandler.h"
 #include <iostream>
+#include <algorithm>
 #include "../ChatClient.h"
 #include "../Exception/PacketException.h"
 using namespace std;
@@ -171,25 +172,71 @@ void PacketHandler::readLoop() {
 								user->getConsoleRenderer()->pushBodyMessage(message);
 								break;
 							}
-						case UPDATE_FRIENDS_LIST_PACKET_ID:
+						case ADD_FRIEND_PACKET_ID:
 							{
+							string name = "";
+							bool isOnline = false;
+							*stream >> name;
+							*stream >> isOnline;
+							for (unsigned short i = 0; i < user->getFriendsListSize(); i++) {
+								if (user->getFriendsList()[i] == nullptr) {
+									user->getFriendsList()[i] = new Friend(name, isOnline);
+									user->getConsoleRenderer()->updateBottomRight(user->getFriendsList(), user->getFriendsListSize());
+									break;
+								}
+							}
+							break;
+							}
+						case REMOVE_FRIEND_PACKET_ID:
+						{
+							string name = "";
+							*stream >> name;
+							transform(name.begin(), name.end(), name.begin(), ::tolower);
+							for (unsigned short i = 0; i < user->getFriendsListSize(); i++) {
+								if (user->getFriendsList()[i] != nullptr && user->getFriendsList()[i]->getLowercaseName() == name) {
+									delete user->getFriendsList()[i];
+									user->getFriendsList()[i] = nullptr;
+									user->getConsoleRenderer()->updateBottomRight(user->getFriendsList(), user->getFriendsListSize());
+									break;
+								}
+							}
+							break;
+						}
+						case FRIEND_STATUS_PACKET_ID:
+						{
+							string name = "";
+							bool isOnline = false;
+							*stream >> name;
+							*stream >> isOnline;
+							transform(name.begin(), name.end(), name.begin(), ::tolower);
+							for (unsigned short i = 0; i < user->getFriendsListSize(); i++) {
+								if (user->getFriendsList()[i] != nullptr && user->getFriendsList()[i]->getLowercaseName() == name) {
+									user->getFriendsList()[i]->setOnline(isOnline);
+									user->getConsoleRenderer()->updateBottomRight(user->getFriendsList(), user->getFriendsListSize());
+									break;
+								}
+							}
+							break;
+						}
+						case FRIENDS_LIST_PACKET_ID:
+							{
+								for (unsigned short i = 0; i < user->getFriendsListSize(); i++) {
+									delete user->getFriendsList()[i];
+								}
+								delete[] user->getFriendsList();
+
 								unsigned short friendCount = 0;
 								*stream >> friendCount;
-								//cout << "Friends list update (" << friendCount << "):";
-								string * friendsList = new string[friendCount];
-								unsigned short * friendListColors = new unsigned short[friendCount];
+								Friend ** friendsList = new Friend*[friendCount];
 								for (unsigned short i = 0; i < friendCount; i++) {
 									string name = "";
-									unsigned short isOnline = 0;
-									*stream >> isOnline;
+									bool isOnline = false;
 									*stream >> name;
-									friendsList[i] = name;
-									friendListColors[i] = isOnline ? FRIEND_COLOR : FRIEND_OFFLINE_COLOR;
+									*stream >> isOnline;
+									friendsList[i] = (name.empty() ? nullptr : new Friend(name, isOnline));
 								}
-								user->getConsoleRenderer()->updateBottomRight(friendsList, friendListColors, friendCount);
-								//cout << endl;
-								delete[] friendsList;
-								delete[] friendListColors;
+								user->getConsoleRenderer()->updateBottomRight(friendsList, friendCount);
+								user->setFriendsList(friendCount, friendsList);
 								break;
 							}
 						default:

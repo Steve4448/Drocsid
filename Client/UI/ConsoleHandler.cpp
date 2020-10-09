@@ -687,7 +687,24 @@ void ConsoleHandler::updateTopRight(string * names, unsigned short * colors, uns
 		outputMutex.unlock();
 }
 
-void ConsoleHandler::updateBottomRight(string * names, unsigned short * colors, unsigned short count, bool push) {
+void ConsoleHandler::updateBottomRight(Friend ** friends, unsigned short count, bool push) {
+	string * names = new string[count];
+	unsigned short* colors = new unsigned short[count];
+	for (unsigned short i = 0; i < count; i++) {
+		if (friends[i] != nullptr) {
+			names[i] = friends[i]->getName();
+			colors[i] = friends[i]->isOnline() ? FRIEND_COLOR : FRIEND_OFFLINE_COLOR;
+		} else {
+			names[i] = "";
+			colors[i] = FRIEND_OFFLINE_COLOR;
+		}
+	}
+	updateBottomRight(names, colors, count, push);
+	delete[] names;
+	delete[] colors;
+}
+
+void ConsoleHandler::updateBottomRight(std::string* names, unsigned short* colors, unsigned short count, bool push) {
 	if (push)
 		outputMutex.lock();
 	COORD lastCursor = curCursor;

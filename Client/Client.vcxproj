@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ChatClient.cpp" />
+    <ClCompile Include="Friend.cpp" />
     <ClCompile Include="Packet\DataStream.cpp" />
     <ClCompile Include="Packet\Packet.cpp" />
     <ClCompile Include="Packet\PacketHandler.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Exception\PacketException.h" />
     <ClInclude Include="Exception\StartupException.h" />
+    <ClInclude Include="Friend.h" />
     <ClInclude Include="Packet\DataStream.h" />
     <ClInclude Include="Packet\Packet.h" />
     <ClInclude Include="Packet\PacketHandler.h" />

@@ -34,7 +34,8 @@ public:
 	bool isFriend(std::string name);
 	bool addFriend(std::string name);
 	bool removeFriend(std::string name);
-	void updateFriendsList();
+	void updateFriendStatus(std::string name, bool online);
+	void sendFriendsList();
 	std::string getIp();
 	std::string * getFriends();
 	PacketHandler * getPacketHandler();

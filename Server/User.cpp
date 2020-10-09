@@ -149,7 +149,11 @@ bool User::addFriend(std::string name) {
 	for (int i = 0; i < MAX_FRIENDS; i++) {
 		if (friendsList[i].empty()) {
 			friendsList[i] = name;
-			updateFriendsList();
+			Packet* p = packetHandler->constructPacket(ADD_FRIEND_PACKET_ID);
+			User* friendUser = server->getUserByName(friendsList[i]);
+			*p << friendsList[i];
+			*p << (friendUser != nullptr && friendUser->getPacketHandler()->isConnected() ? true : false);
+			packetHandler->finializePacket(p);
 			if(getRoom() != nullptr)
 				getRoom()->updateRoomList(this);
 			save();
@@ -167,7 +171,9 @@ bool User::removeFriend(std::string name) {
 	for (int i = 0; i < MAX_FRIENDS; i++) {
 		if (!friendsList[i].empty() && friendsList[i] == name) {
 			friendsList[i] = "";
-			updateFriendsList();
+			Packet* p = packetHandler->constructPacket(REMOVE_FRIEND_PACKET_ID);
+			*p << name;
+			packetHandler->finializePacket(p);
 			if (getRoom() != nullptr)
 				getRoom()->updateRoomList(this);
 			save();
@@ -177,14 +183,25 @@ bool User::removeFriend(std::string name) {
 	return false;
 }
 
-/* Sends the friends list to the user. */
-void User::updateFriendsList() {
-	Packet * p = packetHandler->constructPacket(UPDATE_FRIENDS_LIST_PACKET_ID);
+void User::updateFriendStatus(std::string name, bool online) {
+	Packet* p = packetHandler->constructPacket(FRIEND_STATUS_PACKET_ID);
+	*p << name;
+	*p << online;
+	packetHandler->finializePacket(p);
+}
+
+void User::sendFriendsList() {
+	Packet* p = packetHandler->constructPacket(FRIENDS_LIST_PACKET_ID);
 	*p << (unsigned short)MAX_FRIENDS;
 	for (int i = 0; i < MAX_FRIENDS; i++) {
-		User * friendUser = friendsList[i].empty() ? nullptr : server->getUserByName(friendsList[i]);
-		*p << (unsigned short)(friendUser != nullptr && friendUser->getPacketHandler()->isConnected() ? 1 : 0);
-		*p << friendsList[i];
+		if (!friendsList[i].empty()) {
+			User* friendUser = server->getUserByName(friendsList[i]);
+			*p << friendsList[i];
+			*p << (friendUser != nullptr && friendUser->getPacketHandler()->isConnected() ? true : false);
+		} else {
+			*p << "";
+			*p << false;
+		}
 	}
 	packetHandler->finializePacket(p);
 }
@@ -217,7 +234,7 @@ void User::disconnect() {
 			if (userList[i] == nullptr)
 				continue;
 			if (userList[i]->isFriend(getUsername()))
-				userList[i]->updateFriendsList();
+				userList[i]->updateFriendStatus(getUsername(), false);
 		}
 	}
 	server->removeUser(this);
