@@ -12,19 +12,20 @@ public:
 	unsigned short getId() const;
 
 private:
-	Packet(DataStream * const stream, unsigned short packetId);
-	DataStream * stream;
+	Packet(DataStream* const stream, unsigned short packetId);
+	DataStream* stream;
 	unsigned short currentIndex;
 	unsigned short const packetId;
 
-	friend Packet & operator<<(Packet & dataStream, const std::string & toWrite);
-	friend Packet & operator<<(Packet & dataStream, const int & toWrite);
-	friend Packet & operator<<(Packet & dataStream, const unsigned short & toWrite);
+	friend Packet& operator<<(Packet& dataStream, const char* toWrite);
+	friend Packet& operator<<(Packet& dataStream, const std::string& toWrite);
+	friend Packet& operator<<(Packet& dataStream, const int& toWrite);
+	friend Packet& operator<<(Packet& dataStream, const unsigned short& toWrite);
 	friend Packet& operator<<(Packet& dataStream, const bool& toWrite);
 
-	friend Packet & operator>>(Packet & dataStream, std::string & toRead);
-	friend Packet & operator>>(Packet & dataStream, int & toRead);
-	friend Packet & operator>>(Packet & dataStream, unsigned short & toRead);
+	friend Packet& operator>>(Packet& dataStream, std::string& toRead);
+	friend Packet& operator>>(Packet& dataStream, int& toRead);
+	friend Packet& operator>>(Packet& dataStream, unsigned short& toRead);
 	friend Packet& operator>>(Packet& dataStream, bool& toRead);
 };
 #endif //PACKET_H_

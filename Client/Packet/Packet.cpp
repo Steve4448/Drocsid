@@ -37,6 +37,12 @@ Packet& operator>>(Packet& packet, unsigned short& toRead) {
 }
 
 /* Writes string to the output stream. */
+Packet& operator<<(Packet& packet, const char* toWrite) {
+	*packet.stream << toWrite;
+	return packet;
+}
+
+/* Writes string to the output stream. */
 Packet& operator<<(Packet& packet, const string& toWrite) {
 	*packet.stream << toWrite;
 	return packet;

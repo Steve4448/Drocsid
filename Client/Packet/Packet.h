@@ -17,6 +17,7 @@ private:
 	unsigned short currentIndex;
 	unsigned short const packetId;
 
+	friend Packet& operator<<(Packet& dataStream, const char* toWrite);
 	friend Packet& operator<<(Packet& dataStream, const std::string& toWrite);
 	friend Packet& operator<<(Packet& dataStream, const int& toWrite);
 	friend Packet& operator<<(Packet& dataStream, const unsigned short& toWrite);

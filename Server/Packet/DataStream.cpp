@@ -159,6 +159,11 @@ DataStream & operator<<(DataStream & dataStream, const string & toWrite) {
 	return dataStream;
 }
 
+/* Converts a char array into a string and then writes it via the string implementation. */
+DataStream& operator<<(DataStream& dataStream, const char * toWrite) {
+	return (dataStream << string(toWrite));
+}
+
 /* First reads the size of the string from the input stream and then the string itself. */
 DataStream & operator>>(DataStream & dataStream, string & toRead) {
 	Cursor & idx = dataStream.getReadIndex();

@@ -24,28 +24,29 @@ public:
 	~DataStream();
 	void resetWrite();
 	void resetRead();
-	char * getInputBuffer();
-	char * getOutputBuffer();
+	char* getInputBuffer();
+	char* getOutputBuffer();
 	unsigned short getSize();
-	Cursor & getReadIndex();
-	Cursor & getWriteIndex();
+	Cursor& getReadIndex();
+	Cursor& getWriteIndex();
 private:
 	const unsigned short size;
 	Cursor readIndex;
 	Cursor writeIndex;
-	char * inBuf;
-	char * outBuf;
+	char* inBuf;
+	char* outBuf;
 	/* Writing Variables*/
-	friend DataStream & operator<<(DataStream & dataStream, const std::string & toWrite);
-	friend DataStream & operator<<(DataStream & dataStream, const int & toWrite);
-	friend DataStream & operator<<(DataStream & dataStream, const unsigned short & toWrite);
+	friend DataStream& operator<<(DataStream& dataStream, const char* toWrite);
+	friend DataStream& operator<<(DataStream& dataStream, const std::string& toWrite);
+	friend DataStream& operator<<(DataStream& dataStream, const int& toWrite);
+	friend DataStream& operator<<(DataStream& dataStream, const unsigned short& toWrite);
 	friend DataStream& operator<<(DataStream& dataStream, const bool& toWrite);
 
 	/* Reading Variables*/
-	friend DataStream & operator>>(DataStream & dataStream, std::string & toRead);
-	friend DataStream & operator>>(DataStream & dataStream, int & toRead);
-	friend DataStream & operator>>(DataStream & dataStream, unsigned short & toRead);
-	friend DataStream& operator>>(DataStream& dataStream, bool & toRead);
+	friend DataStream& operator>>(DataStream& dataStream, std::string& toRead);
+	friend DataStream& operator>>(DataStream& dataStream, int& toRead);
+	friend DataStream& operator>>(DataStream& dataStream, unsigned short& toRead);
+	friend DataStream& operator>>(DataStream& dataStream, bool& toRead);
 };
 
 #endif //DATASTREAM_H_

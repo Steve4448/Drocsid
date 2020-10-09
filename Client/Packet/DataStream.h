@@ -36,6 +36,7 @@ private:
 	char* inBuf;
 	char* outBuf;
 	/* Writing Variables*/
+	friend DataStream& operator<<(DataStream& dataStream, const char* toWrite);
 	friend DataStream& operator<<(DataStream& dataStream, const std::string& toWrite);
 	friend DataStream& operator<<(DataStream& dataStream, const int& toWrite);
 	friend DataStream& operator<<(DataStream& dataStream, const unsigned short& toWrite);
