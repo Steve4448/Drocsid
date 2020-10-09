@@ -198,11 +198,14 @@ bool User::removeFriend(std::string name) {
 	return false;
 }
 
-void User::updateFriendStatus(Friend* friendEntry) {
+void User::updateFriendStatus(User* friendUser, Friend* friendEntry) {
+	friendEntry->setActiveUser(friendUser->getPacketHandler()->isConnected() ? friendUser : nullptr);
+
 	Packet* p = packetHandler->constructPacket(FRIEND_STATUS_PACKET_ID);
 	*p << friendEntry->getName();
 	*p << friendEntry->isOnline();
 	packetHandler->finializePacket(p);
+	sendMessage(friendUser, "has just " + (string)(friendEntry->isOnline() ? "logged on." : "logged off."), true, false, false);
 }
 
 void User::sendFriendsList() {

@@ -175,8 +175,7 @@ void Server::handleFriendStatusUpdate(User* user) {
 			continue;
 		Friend* friendEntry = userList[i]->getFriend(user->getUsername());
 		if(friendEntry != nullptr) {
-			friendEntry->setActiveUser(user->getPacketHandler()->isConnected() ? user : nullptr);
-			userList[i]->updateFriendStatus(friendEntry);
+			userList[i]->updateFriendStatus(user, friendEntry);
 		}
 	}
 }

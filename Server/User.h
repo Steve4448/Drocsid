@@ -34,7 +34,7 @@ public:
 	bool addFriend(std::string name);
 	bool removeFriend(std::string name);
 	Friend* getFriend(std::string name);
-	void updateFriendStatus(Friend* friendEntry);
+	void updateFriendStatus(User* friendUser, Friend* friendEntry);
 	void sendFriendsList();
 	void setReplyUsername(std::string name);
 	std::string getReplyUsername();
