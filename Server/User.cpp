@@ -20,7 +20,8 @@ User::User(Server* server, unsigned short userId, SOCKET socket) :
 	friendsList{nullptr},
 	userNameColor(DEFAULT_COLOR),
 	userChatColor(DEFAULT_CHAT_COLOR),
-	packetHandler(new PacketHandler(server, this, socket)) {
+	packetHandler(new PacketHandler(server, this, socket)),
+	replyUsername("") {
 	sockaddr_in socketAddr;
 	int addrLen = sizeof(socketAddr);
 	if(getsockname(socket, (LPSOCKADDR)&socketAddr, &addrLen) == SOCKET_ERROR) {
@@ -342,6 +343,14 @@ void User::save() {
 /* Returns the user's IP address. */
 string User::getIp() {
 	return ip;
+}
+
+string User::getReplyUsername() {
+	return replyUsername;
+}
+
+void User::setReplyUsername(string name) {
+	replyUsername = name;
 }
 
 User::~User() {

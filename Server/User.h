@@ -30,16 +30,18 @@ public:
 	unsigned short load(std::string username);
 	void save();
 	void disconnect();
-	void sendMessage(User* const from, std::string message, bool personalMessage);
 	bool isFriend(std::string name);
 	bool addFriend(std::string name);
 	bool removeFriend(std::string name);
 	Friend* getFriend(std::string name);
 	void updateFriendStatus(Friend* friendEntry);
 	void sendFriendsList();
+	void setReplyUsername(std::string name);
+	std::string getReplyUsername();
 	std::string getIp();
 	Friend** getFriends();
 	PacketHandler* getPacketHandler();
+	void sendMessage(User* const from, std::string message, bool personalMessage);
 	void sendServerMessage(std::string message, unsigned short messageColor = ERROR_COLOR);
 private:
 	Server* server;
@@ -53,6 +55,7 @@ private:
 	std::string username;
 	std::string usernameLowercase;
 	std::string password;
+	std::string replyUsername;
 	Friend* friendsList[MAX_FRIENDS];
 	std::string ip;
 	bool verified;

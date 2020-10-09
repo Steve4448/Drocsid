@@ -33,6 +33,7 @@ The client will first prompt for a IP and then port that points to the running D
 - /removefriend \[username\]
 - /friendslist
 - /pm \[username\] \[message\]
+- /reply \[message\]
 - /settextcolor \[color number\]
 - /setnamecolor \[color number\]
 - /colors

@@ -240,6 +240,26 @@ void PacketHandler::readLoop() {
 											}
 											user->sendMessage(pmUser, actualMessage, true);
 											pmUser->sendMessage(user, actualMessage, true);
+											pmUser->setReplyUsername(user->getUsername());
+											user->setReplyUsername(pmUser->getUsername());
+										} else if(command == "r" || command == "reply") {
+											if(spacePos == string::npos) {
+												user->sendServerMessage("Invalid command arguments.");
+												user->sendServerMessage("Try as /reply [message]");
+												break;
+											}
+											if(user->getReplyUsername().empty()) {
+												user->sendServerMessage("You have nobody to reply to.");
+												break;
+											}
+											User* pmUser = server->getUserByName(user->getReplyUsername());
+											if(pmUser == nullptr) {
+												user->sendServerMessage(user->getReplyUsername() + " is no longer online.");
+												break;
+											}
+											user->sendMessage(pmUser, arguments, true);
+											pmUser->sendMessage(user, arguments, true);
+											pmUser->setReplyUsername(user->getUsername());
 										} else if(command == "settextcolor") {
 											if(spacePos == string::npos) {
 												user->sendServerMessage("Invalid command arguments.");
@@ -282,6 +302,7 @@ void PacketHandler::readLoop() {
 											user->sendServerMessage("/removefriend [username]", DEFAULT_COLOR);
 											user->sendServerMessage("/friendslist", DEFAULT_COLOR);
 											user->sendServerMessage("/pm [username] [message]", DEFAULT_COLOR);
+											user->sendServerMessage("/reply [message]", DEFAULT_COLOR);
 											user->sendServerMessage("/settextcolor [color number]", DEFAULT_COLOR);
 											user->sendServerMessage("/setnamecolor [color number]", DEFAULT_COLOR);
 											user->sendServerMessage("/colors", DEFAULT_COLOR);
